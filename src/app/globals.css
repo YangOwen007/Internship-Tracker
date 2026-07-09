@@ -1,0 +1,74 @@
+@import "tailwindcss";
+
+:root {
+  --background: #f4efe7;
+  --foreground: #18212f;
+  --muted: #6f7b8f;
+  --surface: rgba(255, 252, 247, 0.88);
+  --border: rgba(24, 33, 47, 0.12);
+  --accent: #ff7a59;
+  --accent-cool: #2f7df6;
+  --success: #0f9f75;
+  --warning: #f3a712;
+  --font-display: "Aptos", "Segoe UI Variable Display", "Trebuchet MS", sans-serif;
+  --font-mono: "Cascadia Code", "IBM Plex Mono", "Consolas", monospace;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-display);
+  --font-mono: var(--font-ibm-plex-mono);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  background:
+    radial-gradient(circle at top left, rgba(255, 122, 89, 0.15), transparent 30%),
+    radial-gradient(circle at top right, rgba(47, 125, 246, 0.14), transparent 24%),
+    linear-gradient(180deg, #f8f3ec 0%, #efe8dd 100%);
+}
+
+body {
+  background: transparent;
+  color: var(--foreground);
+  font-family: var(--font-display), sans-serif;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+::selection {
+  background: rgba(47, 125, 246, 0.2);
+}
+
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  box-shadow: 0 18px 45px rgba(24, 33, 47, 0.08);
+  backdrop-filter: blur(14px);
+}
+
+.eyebrow {
+  color: var(--muted);
+  font-family: var(--font-mono), monospace;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.metric-ring {
+  position: relative;
+}
+
+.metric-ring::after {
+  content: "";
+  position: absolute;
+  inset: -8px;
+  border-radius: 9999px;
+  border: 1px dashed rgba(24, 33, 47, 0.12);
+}
