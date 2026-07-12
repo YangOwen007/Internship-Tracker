@@ -169,3 +169,131 @@ export function getDashboardMetrics(
     deadlines,
   };
 }
+
+export function filterApplications(
+  applications: ApplicationRecord[],
+  search: string,
+  status: string,
+  location: string,
+) {
+  const normalizedSearch = search.trim().toLowerCase();
+
+  return applications.filter((application) => {
+    const matchesSearch =
+      normalizedSearch.length === 0 ||
+      application.company.toLowerCase().includes(normalizedSearch) ||
+      application.role.toLowerCase().includes(normalizedSearch);
+
+    const matchesStatus =
+      status.length === 0 || application.status === status;
+
+    const matchesLocation =
+      location.length === 0 || application.location === location;
+
+    return matchesSearch && matchesStatus && matchesLocation;
+  });
+}
+
+export function sortApplications(
+  applications: ApplicationRecord[],
+  sort: string,
+) {
+  const sorted = [...applications];
+
+  // Sorting stays explicit instead of abstracted into a generic comparator so
+  // the user-facing order remains easy to inspect and modify later.
+  switch (sort) {
+    case "oldest":
+      sorted.sort((a, b) => a.appliedAt.localeCompare(b.appliedAt));
+      return sorted;
+    case "company_asc":
+      sorted.sort((a, b) => a.company.localeCompare(b.company));
+      return sorted;
+    case "company_desc":
+      sorted.sort((a, b) => b.company.localeCompare(a.company));
+      return sorted;
+    case "deadline_asc":
+      sorted.sort((a, b) => {
+        if (!a.nextDeadline && !b.nextDeadline) {
+          return 0;
+        }
+        if (!a.nextDeadline) {
+          return 1;
+        }
+        if (!b.nextDeadline) {
+          return -1;
+        }
+        return a.nextDeadline.localeCompare(b.nextDeadline);
+      });
+      return sorted;
+    case "newest":
+    default:
+      sorted.sort((a, b) => b.appliedAt.localeCompare(a.appliedAt));
+      return sorted;
+  }
+}
+
+function getWeekStart(date: Date) {
+  const weekStart = new Date(
+    Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()),
+  );
+  const day = weekStart.getUTCDay();
+  const mondayOffset = day === 0 ? -6 : 1 - day;
+  weekStart.setUTCDate(weekStart.getUTCDate() + mondayOffset);
+  return weekStart;
+}
+
+function formatWeekLabel(date: Date) {
+  return new Intl.DateTimeFormat("en-US", {
+    month: "short",
+    day: "2-digit",
+    timeZone: "UTC",
+  }).format(date);
+}
+
+export function buildWeeklyApplications(
+  applications: ApplicationRecord[],
+  weeks: number | "all" = 6,
+): WeeklyApplicationCount[] {
+  const appliedDates = applications.map(
+    (application) => new Date(`${application.appliedAt}T00:00:00Z`),
+  );
+  const latestAppliedAt =
+    appliedDates.length > 0
+      ? Math.max(...appliedDates.map((date) => date.getTime()))
+      : Date.now();
+  const anchorDate = new Date(Math.max(latestAppliedAt, Date.now()));
+  const currentWeekStart = getWeekStart(anchorDate);
+  const totalWeeks =
+    weeks === "all"
+      ? Math.max(
+          1,
+          Math.ceil(
+            (currentWeekStart.getTime() -
+              getWeekStart(
+                appliedDates.length > 0 ? appliedDates[0] : anchorDate,
+              ).getTime()) /
+              (1000 * 60 * 60 * 24 * 7),
+          ) + 1,
+        )
+      : weeks;
+  const weekStarts = Array.from({ length: totalWeeks }, (_, index) => {
+    const weekStart = new Date(currentWeekStart);
+    weekStart.setUTCDate(currentWeekStart.getUTCDate() - (totalWeeks - 1 - index) * 7);
+    return weekStart;
+  });
+
+  return weekStarts.map((weekStart) => {
+    const weekEnd = new Date(weekStart);
+    weekEnd.setUTCDate(weekStart.getUTCDate() + 7);
+
+    const value = appliedDates.filter(
+      (date) => date >= weekStart && date < weekEnd,
+    ).length;
+
+    return {
+      label: formatWeekLabel(weekStart),
+      value,
+    };
+  });
+}

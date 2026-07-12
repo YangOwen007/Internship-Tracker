@@ -11,6 +11,8 @@ type LazyDashboardChartsProps = {
   weeklyApplications: WeeklyApplicationCount[];
   statusBreakdown: BreakdownDatum[];
   locationBreakdown: BreakdownDatum[];
+  selectedTimeframe: "6" | "12" | "24" | "all";
+  onTimeframeChange: (timeframe: "6" | "12" | "24" | "all") => void;
 };
 
 const DashboardCharts = dynamic(

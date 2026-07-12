@@ -51,7 +51,7 @@ a {
 .panel {
   background: var(--surface);
   border: 1px solid var(--border);
-  box-shadow: 0 14px 32px rgba(24, 33, 47, 0.07);
+  box-shadow: 0 10px 24px rgba(24, 33, 47, 0.05);
 }
 
 .eyebrow {
@@ -75,18 +75,11 @@ a {
 
 .app-column,
 .app-card {
-  content-visibility: auto;
-  contain-intrinsic-size: 320px;
-}
-
-@supports (backdrop-filter: blur(14px)) {
-  .panel {
-    backdrop-filter: blur(10px);
-  }
+  contain: layout paint style;
 }
 
 @media (max-width: 768px) {
   .panel {
-    box-shadow: 0 10px 24px rgba(24, 33, 47, 0.06);
+    box-shadow: 0 8px 18px rgba(24, 33, 47, 0.05);
   }
 }

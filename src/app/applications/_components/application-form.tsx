@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import { useFormStatus } from "react-dom";
 import Link from "next/link";
 import {
@@ -165,26 +165,10 @@ export function ApplicationForm({
       </section>
 
       {/* Recruiter/contact fields stay optional, but grouped together. */}
-      <section className="grid gap-4 md:grid-cols-3">
-        <Field
-          label="Contact Name"
-          name="contactName"
-          defaultValue={values.contactName}
-          placeholder="Jordan Patel"
-        />
-        <Field
-          label="Contact Title"
-          name="contactTitle"
-          defaultValue={values.contactTitle}
-          placeholder="Campus Recruiter"
-        />
-        <Field
-          label="Contact Channel"
-          name="contactChannel"
-          defaultValue={values.contactChannel}
-          placeholder="Referral, LinkedIn, Email"
-        />
-      </section>
+      <OptionalContactFields
+        key={`${values.contactName}|${values.contactTitle}|${values.contactChannel}`}
+        values={values}
+      />
 
       {/* Notes are freeform because interview prep and recruiting context vary a lot. */}
       <label className="grid gap-2">
@@ -208,5 +192,54 @@ export function ApplicationForm({
         </Link>
       </div>
     </form>
+  );
+}
+
+function OptionalContactFields({
+  values,
+}: {
+  values: ApplicationFormValues;
+}) {
+  const [showContactFields, setShowContactFields] = useState(
+    Boolean(
+      values.contactName || values.contactTitle || values.contactChannel,
+    ),
+  );
+
+  return (
+    <section className="grid gap-4">
+      <label className="flex items-center gap-3 rounded-[1.5rem] border border-slate-200 bg-slate-50/80 px-4 py-3 text-sm text-slate-700">
+        <input
+          type="checkbox"
+          checked={showContactFields}
+          onChange={(event) => setShowContactFields(event.target.checked)}
+          className="h-4 w-4 rounded border-slate-300 text-slate-950"
+        />
+        <span className="font-medium">Add recruiter or referral contact</span>
+      </label>
+
+      {showContactFields ? (
+        <div className="grid gap-4 md:grid-cols-3">
+          <Field
+            label="Contact Name"
+            name="contactName"
+            defaultValue={values.contactName}
+            placeholder="Jordan Patel"
+          />
+          <Field
+            label="Contact Title"
+            name="contactTitle"
+            defaultValue={values.contactTitle}
+            placeholder="Campus Recruiter"
+          />
+          <Field
+            label="Contact Channel"
+            name="contactChannel"
+            defaultValue={values.contactChannel}
+            placeholder="Referral, LinkedIn, Email"
+          />
+        </div>
+      ) : null}
+    </section>
   );
 }

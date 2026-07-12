@@ -1,43 +1,7 @@
-import Link from "next/link";
-
 type ApplicationViewToggleProps = {
-  search: string;
-  status: string;
-  location: string;
-  sort: string;
   currentView: "board" | "table";
+  onChange: (view: "board" | "table") => void;
 };
-
-function buildHref({
-  search,
-  status,
-  location,
-  sort,
-  view,
-}: ApplicationViewToggleProps & { view: "board" | "table" }) {
-  const params = new URLSearchParams();
-
-  // We keep the current filters when switching views so the user is changing
-  // presentation, not accidentally resetting the slice of data they care about.
-  if (search) {
-    params.set("search", search);
-  }
-  if (status) {
-    params.set("status", status);
-  }
-  if (location) {
-    params.set("location", location);
-  }
-  if (sort && sort !== "newest") {
-    params.set("sort", sort);
-  }
-  if (view !== "table") {
-    params.set("view", view);
-  }
-
-  const query = params.toString();
-  return query.length > 0 ? `/?${query}#applications` : "/#applications";
-}
 
 export function ApplicationViewToggle(props: ApplicationViewToggleProps) {
   return (
@@ -46,9 +10,10 @@ export function ApplicationViewToggle(props: ApplicationViewToggleProps) {
         const isActive = props.currentView === view;
 
         return (
-          <Link
+          <button
             key={view}
-            href={buildHref({ ...props, view })}
+            type="button"
+            onClick={() => props.onChange(view)}
             className={`rounded-full px-4 py-2 text-sm font-medium transition ${
               isActive
                 ? "bg-white text-slate-950 shadow-sm"
@@ -56,7 +21,7 @@ export function ApplicationViewToggle(props: ApplicationViewToggleProps) {
             }`}
           >
             {view === "board" ? "Board view" : "Table view"}
-          </Link>
+          </button>
         );
       })}
     </div>

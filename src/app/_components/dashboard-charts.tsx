@@ -23,6 +23,8 @@ type DashboardChartsProps = {
   weeklyApplications: WeeklyApplicationCount[];
   statusBreakdown: BreakdownDatum[];
   locationBreakdown: BreakdownDatum[];
+  selectedTimeframe: "6" | "12" | "24" | "all";
+  onTimeframeChange: (timeframe: "6" | "12" | "24" | "all") => void;
 };
 
 function ChartTooltip({
@@ -50,20 +52,36 @@ export function DashboardCharts({
   weeklyApplications,
   statusBreakdown,
   locationBreakdown,
+  selectedTimeframe,
+  onTimeframeChange,
 }: DashboardChartsProps) {
   return (
     <>
       <article className="panel rounded-[1.5rem] p-5">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <p className="eyebrow text-xs">Analytics preview</p>
             <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-slate-950">
               Applications over time
             </h2>
           </div>
-          <span className="rounded-full bg-white px-3 py-1 font-mono text-xs text-slate-600">
-            last 6 weeks
-          </span>
+          <label className="rounded-full border border-slate-200 bg-white px-3 py-1 font-mono text-xs text-slate-600">
+            <span className="mr-2">timeframe</span>
+            <select
+              value={selectedTimeframe}
+              onChange={(event) =>
+                onTimeframeChange(
+                  event.target.value as "6" | "12" | "24" | "all",
+                )
+              }
+              className="bg-transparent outline-none"
+            >
+              <option value="6">6 weeks</option>
+              <option value="12">12 weeks</option>
+              <option value="24">24 weeks</option>
+              <option value="all">all time</option>
+            </select>
+          </label>
         </div>
 
         {/* Recharts gives us real axes, tooltips, and responsive resizing, which
@@ -93,13 +111,19 @@ export function DashboardCharts({
                 axisLine={false}
                 tick={{ fill: "#6f7b8f", fontSize: 12 }}
               />
-              <Tooltip content={<ChartTooltip />} cursor={{ stroke: "#cbd5e1" }} />
+              <Tooltip
+                content={<ChartTooltip />}
+                cursor={{ stroke: "#cbd5e1" }}
+                isAnimationActive={false}
+                wrapperStyle={{ transition: "none", pointerEvents: "none" }}
+              />
               <Area
                 type="monotone"
                 dataKey="value"
                 stroke="#2f7df6"
                 strokeWidth={3}
                 fill="url(#applicationsArea)"
+                isAnimationActive={false}
               />
             </AreaChart>
           </ResponsiveContainer>
@@ -132,12 +156,17 @@ export function DashboardCharts({
                     innerRadius={52}
                     outerRadius={84}
                     paddingAngle={3}
+                    isAnimationActive={false}
                   >
                     {statusBreakdown.map((entry) => (
                       <Cell key={entry.label} fill={entry.color ?? "#94a3b8"} />
                     ))}
                   </Pie>
-                  <Tooltip content={<ChartTooltip />} />
+                  <Tooltip
+                    content={<ChartTooltip />}
+                    isAnimationActive={false}
+                    wrapperStyle={{ transition: "none", pointerEvents: "none" }}
+                  />
                 </PieChart>
               </ResponsiveContainer>
             </div>
@@ -182,12 +211,18 @@ export function DashboardCharts({
                     axisLine={false}
                     tick={{ fill: "#334155", fontSize: 12 }}
                   />
-                  <Tooltip content={<ChartTooltip />} cursor={{ fill: "rgba(47, 125, 246, 0.06)" }} />
+                  <Tooltip
+                    content={<ChartTooltip />}
+                    cursor={{ fill: "rgba(47, 125, 246, 0.06)" }}
+                    isAnimationActive={false}
+                    wrapperStyle={{ transition: "none", pointerEvents: "none" }}
+                  />
                   <Bar
                     dataKey="value"
                     radius={[999, 999, 999, 999]}
                     fill="#ff7a59"
                     barSize={18}
+                    isAnimationActive={false}
                   />
                 </BarChart>
               </ResponsiveContainer>

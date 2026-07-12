@@ -2,12 +2,12 @@ import { ApplicationStatus as PrismaApplicationStatus } from "@/generated/prisma
 import {
   BreakdownDatum,
   ApplicationRecord,
+  buildWeeklyApplications,
   getDashboardMetrics,
   PriorityApplication,
   statusChartColors,
   statusLabels,
   statuses,
-  WeeklyApplicationCount,
 } from "@/lib/applications";
 import { prisma } from "@/lib/prisma";
 
@@ -34,57 +34,6 @@ function mapStatus(status: PrismaApplicationStatus): ApplicationRecord["status"]
     case PrismaApplicationStatus.ARCHIVED:
       return "archived";
   }
-}
-
-function getWeekStart(date: Date) {
-  const weekStart = new Date(
-    Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()),
-  );
-  const day = weekStart.getUTCDay();
-  const mondayOffset = day === 0 ? -6 : 1 - day;
-  weekStart.setUTCDate(weekStart.getUTCDate() + mondayOffset);
-  return weekStart;
-}
-
-function formatWeekLabel(date: Date) {
-  return new Intl.DateTimeFormat("en-US", {
-    month: "short",
-    day: "2-digit",
-    timeZone: "UTC",
-  }).format(date);
-}
-
-function buildWeeklyApplications(
-  applications: ApplicationRecord[],
-): WeeklyApplicationCount[] {
-  const appliedDates = applications.map(
-    (application) => new Date(`${application.appliedAt}T00:00:00Z`),
-  );
-  const anchorDate =
-    appliedDates.length > 0
-      ? new Date(Math.max(...appliedDates.map((date) => date.getTime())))
-      : new Date();
-
-  const currentWeekStart = getWeekStart(anchorDate);
-  const weekStarts = Array.from({ length: 6 }, (_, index) => {
-    const weekStart = new Date(currentWeekStart);
-    weekStart.setUTCDate(currentWeekStart.getUTCDate() - (5 - index) * 7);
-    return weekStart;
-  });
-
-  return weekStarts.map((weekStart) => {
-    const weekEnd = new Date(weekStart);
-    weekEnd.setUTCDate(weekStart.getUTCDate() + 7);
-
-    const value = appliedDates.filter(
-      (date) => date >= weekStart && date < weekEnd,
-    ).length;
-
-    return {
-      label: formatWeekLabel(weekStart),
-      value,
-    };
-  });
 }
 
 function buildStatusBreakdown(applications: ApplicationRecord[]): BreakdownDatum[] {

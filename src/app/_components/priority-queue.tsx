@@ -1,4 +1,3 @@
-import Link from "next/link";
 import {
   formatDate,
   PriorityApplication,
@@ -8,9 +7,13 @@ import {
 
 type PriorityQueueProps = {
   applications: PriorityApplication[];
+  onOpenApplication: (applicationId: string) => void;
 };
 
-export function PriorityQueue({ applications }: PriorityQueueProps) {
+export function PriorityQueue({
+  applications,
+  onOpenApplication,
+}: PriorityQueueProps) {
   return (
     <article className="panel rounded-[1.5rem] p-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -21,7 +24,7 @@ export function PriorityQueue({ applications }: PriorityQueueProps) {
           </h2>
         </div>
         <span className="rounded-full bg-white px-3 py-1 font-mono text-xs text-slate-600">
-          top 5 priorities
+          top 5 priorities by date
         </span>
       </div>
 
@@ -44,7 +47,7 @@ export function PriorityQueue({ applications }: PriorityQueueProps) {
                     {application.company}
                   </p>
                   <p className="mt-1 text-sm text-slate-600">
-                    {application.role} · {application.location}
+                    {application.role} - {application.location}
                   </p>
                 </div>
                 <span className="rounded-full bg-amber-50 px-3 py-1 font-mono text-xs text-amber-700">
@@ -69,12 +72,13 @@ export function PriorityQueue({ applications }: PriorityQueueProps) {
                 </p>
               ) : null}
 
-              <Link
-                href={`/applications/${application.id}/edit`}
-                className="mt-3 inline-block text-sm font-medium text-slate-700 underline decoration-slate-300 underline-offset-4"
+              <button
+                type="button"
+                onClick={() => onOpenApplication(application.id)}
+                className="mt-3 inline-block text-left text-sm font-medium text-slate-700 underline decoration-slate-300 underline-offset-4"
               >
                 Open application
-              </Link>
+              </button>
             </div>
           ))
         )}
