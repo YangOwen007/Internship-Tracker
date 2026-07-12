@@ -36,6 +36,7 @@ body {
   background: transparent;
   color: var(--foreground);
   font-family: var(--font-display), sans-serif;
+  text-rendering: optimizeLegibility;
 }
 
 a {
@@ -50,8 +51,7 @@ a {
 .panel {
   background: var(--surface);
   border: 1px solid var(--border);
-  box-shadow: 0 18px 45px rgba(24, 33, 47, 0.08);
-  backdrop-filter: blur(14px);
+  box-shadow: 0 14px 32px rgba(24, 33, 47, 0.07);
 }
 
 .eyebrow {
@@ -71,4 +71,22 @@ a {
   inset: -8px;
   border-radius: 9999px;
   border: 1px dashed rgba(24, 33, 47, 0.12);
+}
+
+.app-column,
+.app-card {
+  content-visibility: auto;
+  contain-intrinsic-size: 320px;
+}
+
+@supports (backdrop-filter: blur(14px)) {
+  .panel {
+    backdrop-filter: blur(10px);
+  }
+}
+
+@media (max-width: 768px) {
+  .panel {
+    box-shadow: 0 10px 24px rgba(24, 33, 47, 0.06);
+  }
 }

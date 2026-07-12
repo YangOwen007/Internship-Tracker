@@ -1,102 +1,123 @@
 # Internship Tracker
 
-A polished internship application tracker aimed at sophomore recruiting. The goal is to build a project that is genuinely useful during recruiting while also showing strong full-stack engineering fundamentals on GitHub.
+A full-stack internship and job application tracker built to feel closer to a lightweight recruiting CRM than a class CRUD app.
 
-## Current State
+## Overview
 
-The repo started empty. It now has:
+This project helps students manage the recruiting process end to end:
 
-- A Next.js App Router + TypeScript foundation
-- Tailwind-based styling with a custom dashboard visual system
-- A typed application domain model with sample recruiting data
-- A recruiter-friendly dashboard shell with analytics, pipeline view, and application table
+- track applications across recruiting stages
+- manage notes, deadlines, contacts, tags, and resume versions
+- review progress through both a board view and a table view
+- see analytics and a priority queue instead of just storing records
 
-This is an intentional MVP foundation rather than a generic landing page. The next milestone is wiring the same information architecture to real auth and database persistence.
+The project is intentionally positioned as a portfolio piece that shows product thinking, full-stack engineering, database design, authentication, and deployment readiness.
 
-## Recommended MVP Scope
+## Why This Project Is Strong
 
-Build these first, and build them well:
+- It is a real product workflow, not just a form and a list.
+- It includes auth and user-scoped data.
+- It uses a relational schema with Prisma-backed queries.
+- It has both operational analytics and day-to-day application management views.
+- It includes CI, health checks, and deployment planning.
 
-1. Authentication and user-specific data
-2. Application CRUD with strong validation
-3. Dashboard analytics
-4. Table view with filters, sorting, and search
-5. Kanban or status pipeline view
-6. Contacts, deadlines, notes, and resume version tracking
+## Current Features
 
-That scope is strong enough for a portfolio piece because it demonstrates product thinking, database design, UI polish, and full-stack execution without spreading the project too thin.
+- Email/password authentication
+- User-specific application data
+- Dashboard metrics and charts
+- Priority queue for upcoming deadlines and follow-up work
+- Board view with drag-and-drop stage movement
+- Table view with search, filters, and sorting
+- Create and edit application flows
+- Contacts, notes, tags, deadlines, salary, job link, and resume version tracking
+- Health endpoint at `/api/health`
+- GitHub Actions CI
 
-## Recommended Stack
-
-This repo currently uses:
+## Tech Stack
 
 - Next.js 16 App Router
 - React 19
-- TypeScript 5
+- TypeScript
 - Tailwind CSS 4
+- Prisma ORM
+- NextAuth/Auth.js credentials auth
+- Recharts
+- SQLite for current local development
+- PostgreSQL-ready deployment path
 
-Recommended next additions:
+## Architecture Notes
 
-- PostgreSQL for primary storage
-- Prisma ORM for schema, migrations, and typed database access
-- Auth.js for authentication
-- Recharts or Tremor charts once the dashboard is backed by real data
-- Docker and GitHub Actions after the MVP data flow is stable
+The app currently uses a SQLite-first local workflow because it keeps iteration fast and stable in the current environment. The codebase has been cleaned up so the final PostgreSQL switch is much smaller than it would have been earlier:
 
-Why this stack:
-
-- Next.js gives you one codebase for UI, server components, actions, and API routes.
-- Prisma + PostgreSQL is a clean, internship-worthy combination that teaches real schema and migration workflows.
-- Auth.js makes the app feel like a real product with protected data and user-specific records.
-
-## Implementation Plan
-
-1. Foundation
-   - Clean app shell
-   - Shared design language
-   - Typed domain model
-2. Data layer
-   - Add Prisma schema
-   - Set up PostgreSQL
-   - Seed realistic demo data
-3. Authentication
-   - Add Auth.js
-   - Protect dashboard routes
-   - Scope all application data by user
-4. Core product flows
-   - Create and edit applications
-   - Table filters and search
-   - Kanban status management
-5. Analytics
-   - Response, interview, and offer metrics
-   - Time-series application chart
-   - Breakdown by status, role, and location
-6. Portfolio polish
-   - README screenshots
-   - Deployment setup
-   - Tests and CI
+- shared database configuration lives in [src/lib/database-config.ts](C:/Users/centu/Documents/Internship%20Tracker/src/lib/database-config.ts)
+- the Prisma client is prepared for both the current SQLite path and a future standard connection-string path in [src/lib/prisma.ts](C:/Users/centu/Documents/Internship%20Tracker/src/lib/prisma.ts)
+- local PostgreSQL setup and cutover docs are already in place
 
 ## Local Development
 
-Use the bundled Node runtime or your local Node install, then run:
+Run:
 
 ```bash
+pnpm db:setup
+pnpm dev
+```
+
+If Prisma CLI is flaky in your local Windows runtime, use:
+
+```bash
+pnpm db:setup:direct
 pnpm dev
 ```
 
 Useful scripts:
 
 ```bash
+pnpm db:generate
+pnpm db:bootstrap
+pnpm db:seed
+pnpm db:seed:direct
+pnpm db:setup:direct
+pnpm db:postgres:up
+pnpm db:postgres:down
+pnpm db:postgres:logs
 pnpm lint
 pnpm typecheck
 pnpm build
 ```
 
-## What This Project Should Demonstrate
+## Demo Account
+
+- Email: `owen.yang.demo@internship-tracker.local`
+- Password: `demo12345`
+
+## Deployment And PostgreSQL Prep
+
+- [docker-compose.postgres.yml](C:/Users/centu/Documents/Internship%20Tracker/docker-compose.postgres.yml)
+- [.env.postgres.example](C:/Users/centu/Documents/Internship%20Tracker/.env.postgres.example)
+- [.env.production.example](C:/Users/centu/Documents/Internship%20Tracker/.env.production.example)
+- [docs/postgres-migration-plan.md](C:/Users/centu/Documents/Internship%20Tracker/docs/postgres-migration-plan.md)
+- [docs/deployment-guide.md](C:/Users/centu/Documents/Internship%20Tracker/docs/deployment-guide.md)
+
+## CI
+
+The repo includes [`.github/workflows/ci.yml`](C:/Users/centu/Documents/Internship%20Tracker/.github/workflows/ci.yml), which:
+
+- installs dependencies
+- bootstraps a local SQLite database
+- runs lint
+- runs typecheck
+- runs a production build
+
+## Screenshot Plan
+
+README screenshots have not been added yet. The planned capture list is in [docs/screenshot-shotlist.md](C:/Users/centu/Documents/Internship%20Tracker/docs/screenshot-shotlist.md).
+
+## What This Project Demonstrates
 
 - Full-stack web development
 - Thoughtful schema design
-- Clean, responsive product UI
-- User authentication
+- Clean product-oriented UI/UX
+- Authentication and user-specific data
 - Analytics beyond basic CRUD
-- Project quality that reads well to recruiters and hiring managers
+- Deployment and CI readiness

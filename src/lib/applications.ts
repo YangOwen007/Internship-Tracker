@@ -18,7 +18,7 @@ export type ApplicationRecord = {
   location: string;
   status: ApplicationStatus;
   appliedAt: string;
-  salary: string;
+  salary: string | null;
   jobLink: string;
   nextDeadline: string | null;
   contact: {
@@ -26,149 +26,43 @@ export type ApplicationRecord = {
     title: string;
     channel: string;
   } | null;
-  resumeVersion: string;
+  resumeVersion: string | null;
   tags: string[];
   notes: string;
 };
 
-export const sampleApplications: ApplicationRecord[] = [
-  {
-    id: "app_1",
-    company: "Figma",
-    role: "Software Engineer Intern",
-    location: "San Francisco, CA",
-    status: "interview",
-    appliedAt: "2026-06-11",
-    salary: "$52/hr",
-    jobLink: "https://www.figma.com/careers/",
-    nextDeadline: "2026-07-12",
-    contact: {
-      name: "Maya Chen",
-      title: "University Recruiter",
-      channel: "Referral",
-    },
-    resumeVersion: "Resume v4 - product engineering",
-    tags: ["frontend", "design-tools"],
-    notes: "Strong fit. Mentioned dashboard project and ownership on AI tooling experiments.",
-  },
-  {
-    id: "app_2",
-    company: "Ramp",
-    role: "Software Engineering Intern",
-    location: "New York, NY",
-    status: "oa",
-    appliedAt: "2026-06-20",
-    salary: "$60/hr",
-    jobLink: "https://ramp.com/careers",
-    nextDeadline: "2026-07-10",
-    contact: {
-      name: "Jordan Patel",
-      title: "Campus Recruiter",
-      channel: "LinkedIn",
-    },
-    resumeVersion: "Resume v5 - backend emphasis",
-    tags: ["fintech", "backend"],
-    notes: "OA window closes soon. Prioritize finishing with clean explanations in comments.",
-  },
-  {
-    id: "app_3",
-    company: "Notion",
-    role: "Product Engineering Intern",
-    location: "Remote",
-    status: "applied",
-    appliedAt: "2026-06-25",
-    salary: "Unknown",
-    jobLink: "https://www.notion.so/careers",
-    nextDeadline: null,
-    contact: null,
-    resumeVersion: "Resume v4 - product engineering",
-    tags: ["product", "full-stack"],
-    notes: "Need a better cover letter template tied to product intuition and developer empathy.",
-  },
-  {
-    id: "app_4",
-    company: "Datadog",
-    role: "Software Engineer Intern",
-    location: "Boston, MA",
-    status: "final_round",
-    appliedAt: "2026-05-29",
-    salary: "$57/hr",
-    jobLink: "https://careers.datadoghq.com",
-    nextDeadline: "2026-07-15",
-    contact: {
-      name: "Ari Green",
-      title: "Engineer Interviewer",
-      channel: "Email",
-    },
-    resumeVersion: "Resume v5 - backend emphasis",
-    tags: ["infra", "observability"],
-    notes: "Prepare two scaling stories and one debugging story with measurable impact.",
-  },
-  {
-    id: "app_5",
-    company: "Vercel",
-    role: "Frontend Engineer Intern",
-    location: "Hybrid",
-    status: "interested",
-    appliedAt: "2026-07-04",
-    salary: "Unknown",
-    jobLink: "https://vercel.com/careers",
-    nextDeadline: "2026-07-18",
-    contact: null,
-    resumeVersion: "Resume v4 - product engineering",
-    tags: ["frontend", "platform"],
-    notes: "Target after polishing this tracker and README screenshots.",
-  },
-  {
-    id: "app_6",
-    company: "Palantir",
-    role: "Forward Deployed Software Engineer Intern",
-    location: "Palo Alto, CA",
-    status: "rejected",
-    appliedAt: "2026-05-14",
-    salary: "$56/hr",
-    jobLink: "https://www.palantir.com/careers/",
-    nextDeadline: null,
-    contact: null,
-    resumeVersion: "Resume v3 - general SWE",
-    tags: ["systems", "mission-driven"],
-    notes: "Good reminder to tailor impact bullets earlier in the cycle.",
-  },
-  {
-    id: "app_7",
-    company: "Anthropic",
-    role: "Applied AI Engineering Intern",
-    location: "San Francisco, CA",
-    status: "offer",
-    appliedAt: "2026-04-30",
-    salary: "$70/hr",
-    jobLink: "https://www.anthropic.com/careers",
-    nextDeadline: "2026-07-16",
-    contact: {
-      name: "Sofia Ramirez",
-      title: "Recruiting Coordinator",
-      channel: "Email",
-    },
-    resumeVersion: "Resume v6 - AI systems",
-    tags: ["ai", "ml-systems"],
-    notes: "Offer in hand. Useful benchmark for what stories resonated across the loop.",
-  },
-  {
-    id: "app_8",
-    company: "Canva",
-    role: "Software Engineer Intern",
-    location: "Remote",
-    status: "archived",
-    appliedAt: "2026-03-12",
-    salary: "Unknown",
-    jobLink: "https://www.canva.com/careers/",
-    nextDeadline: null,
-    contact: null,
-    resumeVersion: "Resume v2 - generalist",
-    tags: ["design-tools"],
-    notes: "Archived because the cycle closed before follow-up. Keep for analytics history.",
-  },
-];
+export type WeeklyApplicationCount = {
+  label: string;
+  value: number;
+};
+
+export type BreakdownDatum = {
+  label: string;
+  value: number;
+  color?: string;
+};
+
+export type PriorityApplication = Pick<
+  ApplicationRecord,
+  | "id"
+  | "company"
+  | "role"
+  | "status"
+  | "nextDeadline"
+  | "contact"
+  | "location"
+> & {
+  urgencyLabel: string;
+};
+
+export type DashboardMetrics = {
+  total: number;
+  responseRate: number;
+  interviewRate: number;
+  offerRate: number;
+  active: number;
+  deadlines: number;
+};
 
 export const statusLabels: Record<ApplicationStatus, string> = {
   interested: "Interested",
@@ -192,22 +86,44 @@ export const statusColors: Record<ApplicationStatus, string> = {
   archived: "bg-stone-200 text-stone-700",
 };
 
-const weeklyCountsSource = [
-  ["Jun 02", 2],
-  ["Jun 09", 3],
-  ["Jun 16", 5],
-  ["Jun 23", 4],
-  ["Jun 30", 6],
-  ["Jul 07", 3],
-] as const;
+export const statusChartColors: Record<ApplicationStatus, string> = {
+  interested: "#94a3b8",
+  applied: "#2f7df6",
+  oa: "#06b6d4",
+  interview: "#f3a712",
+  final_round: "#8b5cf6",
+  offer: "#0f9f75",
+  rejected: "#fb7185",
+  archived: "#a8a29e",
+};
 
-export const weeklyApplications = weeklyCountsSource.map(([label, value]) => ({
-  label,
-  value,
-}));
+export function formatDate(value: string | null) {
+  if (!value) {
+    return "No deadline";
+  }
 
-export const dashboardMetrics = (() => {
-  const total = sampleApplications.length;
+  return new Intl.DateTimeFormat("en-US", {
+    month: "short",
+    day: "numeric",
+  }).format(new Date(`${value}T00:00:00`));
+}
+
+export function getDashboardMetrics(
+  applications: ApplicationRecord[],
+): DashboardMetrics {
+  const total = applications.length;
+
+  if (total === 0) {
+    return {
+      total: 0,
+      responseRate: 0,
+      interviewRate: 0,
+      offerRate: 0,
+      active: 0,
+      deadlines: 0,
+    };
+  }
+
   const responseStatuses: ApplicationStatus[] = [
     "oa",
     "interview",
@@ -228,19 +144,19 @@ export const dashboardMetrics = (() => {
     "final_round",
   ];
 
-  const responses = sampleApplications.filter((application) =>
+  const responses = applications.filter((application) =>
     responseStatuses.includes(application.status),
   ).length;
-  const interviews = sampleApplications.filter((application) =>
+  const interviews = applications.filter((application) =>
     interviewStatuses.includes(application.status),
   ).length;
-  const offers = sampleApplications.filter(
+  const offers = applications.filter(
     (application) => application.status === "offer",
   ).length;
-  const active = sampleApplications.filter((application) =>
+  const active = applications.filter((application) =>
     activeStatuses.includes(application.status),
   ).length;
-  const deadlines = sampleApplications.filter(
+  const deadlines = applications.filter(
     (application) => application.nextDeadline !== null,
   ).length;
 
@@ -252,4 +168,4 @@ export const dashboardMetrics = (() => {
     active,
     deadlines,
   };
-})();
+}
