@@ -137,7 +137,7 @@ export function ApplicationDetailModal({
         <div className="mt-6 flex flex-wrap items-center gap-3">
           <Link
             href={`/applications/${application.id}/edit`}
-            className="rounded-full bg-slate-950 px-5 py-3 text-sm font-medium text-white transition-colors hover:bg-slate-800"
+            className="rounded-full bg-[color:var(--foreground)] px-5 py-3 text-sm font-medium !text-white transition-colors hover:bg-slate-800"
           >
             Edit application
           </Link>

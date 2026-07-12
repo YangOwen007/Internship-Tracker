@@ -20,7 +20,7 @@ export function AppHeader({ name, email }: AppHeaderProps) {
       <div className="flex items-center gap-3">
         <Link
           href="/applications/new"
-          className="rounded-full bg-slate-950 px-4 py-2 text-sm font-medium text-white transition hover:bg-slate-800"
+          className="rounded-full bg-[color:var(--foreground)] px-4 py-2 text-sm font-medium !text-white transition-colors hover:bg-slate-800"
         >
           Add application
         </Link>

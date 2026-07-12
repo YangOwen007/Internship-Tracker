@@ -24,7 +24,7 @@ function SubmitButton({ mode }: { mode: "create" | "edit" }) {
   return (
     <button
       type="submit"
-      className="rounded-full bg-slate-950 px-5 py-3 text-sm font-medium text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
+      className="rounded-full bg-[color:var(--foreground)] px-5 py-3 text-sm font-medium !text-white transition-colors hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
       disabled={pending}
     >
       {pending

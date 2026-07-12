@@ -152,7 +152,7 @@ export function DashboardShell({
               </div>
               <div className="flex flex-wrap gap-3">
                 <a
-                  className="rounded-full bg-slate-950 px-5 py-3 text-sm font-medium text-white transition-colors hover:bg-slate-800"
+                  className="rounded-full bg-[color:var(--foreground)] px-5 py-3 text-sm font-medium !text-white transition-colors hover:bg-slate-800"
                   href="#applications"
                 >
                   Open workspace
