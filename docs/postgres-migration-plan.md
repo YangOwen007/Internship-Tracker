@@ -1,31 +1,26 @@
-# PostgreSQL Migration Plan
+# PostgreSQL Migration Status
 
-This project is currently optimized for fast local iteration with SQLite, but the schema and app structure are being prepared for a PostgreSQL move.
+The PostgreSQL cutover is now complete in the codebase.
 
-## What Is Already Ready
+## What Changed
 
-- Prisma models already represent relational app data cleanly.
-- App queries are centralized instead of scattered across components.
-- Auth and CRUD flows are already scoped by user.
-- A local PostgreSQL container config now exists in `docker-compose.postgres.yml`.
+1. The Prisma schema now targets PostgreSQL.
+2. The datasource URL moved into [prisma.config.ts](C:/Users/centu/Documents/Internship%20Tracker/prisma.config.ts), which matches Prisma 7's config model.
+3. The generated Prisma client was regenerated for PostgreSQL, including the `passwordHash` field on `User`.
+4. The SQLite-only bootstrap workaround was removed.
+5. The project now uses an initial migration in [prisma/migrations](C:/Users/centu/Documents/Internship%20Tracker/prisma/migrations).
+6. Seed data now writes directly through the PostgreSQL Prisma client.
+7. CI now boots PostgreSQL, applies migrations, and seeds data before verification.
 
-## What Still Needs To Change
+## Local Setup
 
-1. Switch the Prisma datasource provider in `prisma/schema.prisma` from `sqlite` to `postgresql`.
-2. Regenerate the Prisma client in an environment where Prisma CLI works cleanly.
-3. Replace the SQLite-only bootstrap path with Prisma migrations.
-4. Update deployment env vars to use a hosted PostgreSQL URL.
+1. Start PostgreSQL with `pnpm db:postgres:up`.
+2. Copy `.env.postgres.example` to `.env`.
+3. Run `pnpm db:setup`.
+4. Start the app with `pnpm dev`.
 
-## Why We Are Not Flipping Today
+## Remaining Operational Work
 
-The current local Windows runtime has been reliable for app development but flaky around Prisma CLI and client regeneration. Doing migration prep first keeps the app stable while making the remaining database switch smaller and easier to reason about.
-
-## Suggested Cutover Order
-
-1. Start PostgreSQL locally with Docker.
-2. Copy `.env.postgres.example` into `.env` for a test branch or separate local environment.
-3. Change Prisma provider to `postgresql`.
-4. Regenerate Prisma client.
-5. Use migrations instead of `prisma/bootstrap.ts`.
-6. Run the seed script against PostgreSQL.
-7. Verify auth, CRUD, filters, and charts.
+1. Verify the migration against the local Docker database if PostgreSQL is not already running.
+2. Point deployment to a hosted PostgreSQL instance.
+3. Capture updated screenshots once the deployed environment is live.

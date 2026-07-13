@@ -68,16 +68,9 @@ export async function signup(
     data: {
       name: parsedValues.data.name,
       email: parsedValues.data.email,
+      passwordHash,
     },
   });
-
-  const createdUser = await prisma.user.findUniqueOrThrow({
-    where: {
-      email: parsedValues.data.email,
-    },
-  });
-
-  await setUserPasswordHash(createdUser.id, passwordHash);
 
   redirect("/login?registered=1");
 }

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getDatabaseMode } from "@/lib/database-config";
+import { getDatabaseUrl } from "@/lib/database-config";
 
 export async function GET() {
   // This lightweight endpoint is useful for deployment smoke tests and later
@@ -7,7 +7,9 @@ export async function GET() {
   return NextResponse.json({
     status: "ok",
     timestamp: new Date().toISOString(),
-    databaseMode: getDatabaseMode(),
+    databaseMode: getDatabaseUrl().startsWith("postgresql:")
+      ? "postgresql"
+      : "unknown",
     authConfigured: Boolean(process.env.NEXTAUTH_SECRET),
   });
 }

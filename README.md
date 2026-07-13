@@ -43,30 +43,25 @@ The project is intentionally positioned as a portfolio piece that shows product 
 - Prisma ORM
 - NextAuth/Auth.js credentials auth
 - Recharts
-- SQLite for current local development
-- PostgreSQL-ready deployment path
+- PostgreSQL
+- Docker for local database setup
 
 ## Architecture Notes
 
-The app currently uses a SQLite-first local workflow because it keeps iteration fast and stable in the current environment. The codebase has been cleaned up so the final PostgreSQL switch is much smaller than it would have been earlier:
+The app now runs on a PostgreSQL-first workflow locally and in deployment-oriented environments:
 
-- shared database configuration lives in [src/lib/database-config.ts](C:/Users/centu/Documents/Internship%20Tracker/src/lib/database-config.ts)
-- the Prisma client is prepared for both the current SQLite path and a future standard connection-string path in [src/lib/prisma.ts](C:/Users/centu/Documents/Internship%20Tracker/src/lib/prisma.ts)
-- local PostgreSQL setup and cutover docs are already in place
+- connection config lives in [prisma.config.ts](C:/Users/centu/Documents/Internship%20Tracker/prisma.config.ts)
+- the shared Prisma client uses the generated PostgreSQL client in [src/lib/prisma.ts](C:/Users/centu/Documents/Internship%20Tracker/src/lib/prisma.ts)
+- schema setup is reproducible through [prisma/migrations](C:/Users/centu/Documents/Internship%20Tracker/prisma/migrations)
 
 ## Local Development
 
 Run:
 
 ```bash
+pnpm db:postgres:up
+cp .env.postgres.example .env
 pnpm db:setup
-pnpm dev
-```
-
-If Prisma CLI is flaky in your local Windows runtime, use:
-
-```bash
-pnpm db:setup:direct
 pnpm dev
 ```
 
@@ -74,10 +69,11 @@ Useful scripts:
 
 ```bash
 pnpm db:generate
-pnpm db:bootstrap
+pnpm db:migrate:dev
+pnpm db:migrate:deploy
+pnpm db:push
 pnpm db:seed
-pnpm db:seed:direct
-pnpm db:setup:direct
+pnpm db:setup
 pnpm db:postgres:up
 pnpm db:postgres:down
 pnpm db:postgres:logs
@@ -104,7 +100,9 @@ pnpm build
 The repo includes [`.github/workflows/ci.yml`](C:/Users/centu/Documents/Internship%20Tracker/.github/workflows/ci.yml), which:
 
 - installs dependencies
-- bootstraps a local SQLite database
+- starts PostgreSQL
+- applies Prisma migrations
+- seeds demo data
 - runs lint
 - runs typecheck
 - runs a production build

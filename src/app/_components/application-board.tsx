@@ -5,16 +5,21 @@ import { BoardColumn } from "@/app/_components/board-column";
 import { updateApplicationStatus } from "@/app/applications/actions";
 import {
   ApplicationRecord,
+  sortApplications,
   statuses,
 } from "@/lib/applications";
 
 type ApplicationBoardProps = {
   applications: ApplicationRecord[];
+  sort: string;
 };
 
 const boardStatuses = statuses;
 
-export function ApplicationBoard({ applications }: ApplicationBoardProps) {
+export function ApplicationBoard({
+  applications,
+  sort,
+}: ApplicationBoardProps) {
   const [isPending, startTransition] = useTransition();
   const [optimisticApplications, applyOptimisticMove] = useOptimistic(
     applications,
@@ -40,12 +45,15 @@ export function ApplicationBoard({ applications }: ApplicationBoardProps) {
       Object.fromEntries(
         boardStatuses.map((status) => [
           status,
-          optimisticApplications.filter(
-            (application) => application.status === status,
+          sortApplications(
+            optimisticApplications.filter(
+              (application) => application.status === status,
+            ),
+            sort,
           ),
         ]),
       ) as Record<(typeof boardStatuses)[number], ApplicationRecord[]>,
-    [optimisticApplications],
+    [optimisticApplications, sort],
   );
 
   function moveApplication(

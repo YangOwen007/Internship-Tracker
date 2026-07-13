@@ -8,26 +8,31 @@ export type UserAccountRecord = {
 };
 
 export async function getUserAccountByEmail(email: string) {
-  // We use raw SQL here because the generated Prisma client in this environment
-  // can lag behind schema changes even when the actual database column exists.
-  const rows = await prisma.$queryRaw<UserAccountRecord[]>`
-    SELECT "id", "email", "name", "passwordHash"
-    FROM "User"
-    WHERE "email" = ${email}
-    LIMIT 1
-  `;
-
-  return rows[0] ?? null;
+  // With the PostgreSQL cutover complete, the generated client is the source
+  // of truth again and we can keep account reads type-safe.
+  return prisma.user.findUnique({
+    where: {
+      email,
+    },
+    select: {
+      id: true,
+      email: true,
+      name: true,
+      passwordHash: true,
+    },
+  });
 }
 
 export async function setUserPasswordHash(
   userId: string,
   passwordHash: string,
 ) {
-  await prisma.$executeRaw`
-    UPDATE "User"
-    SET "passwordHash" = ${passwordHash},
-        "updatedAt" = CURRENT_TIMESTAMP
-    WHERE "id" = ${userId}
-  `;
+  await prisma.user.update({
+    where: {
+      id: userId,
+    },
+    data: {
+      passwordHash,
+    },
+  });
 }

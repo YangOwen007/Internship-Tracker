@@ -1,16 +1,15 @@
 import "dotenv/config";
 
-import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
+import { PrismaPg } from "@prisma/adapter-pg";
 import bcrypt from "bcryptjs";
 import {
   ApplicationStatus,
   PrismaClient,
 } from "../src/generated/prisma/client";
-import { assertSqliteDatabaseUrl } from "../src/lib/database-config";
-import { setUserPasswordHash } from "../src/lib/user-account-store";
+import { getDatabaseUrl } from "../src/lib/database-config";
 
-const adapter = new PrismaBetterSqlite3({
-  url: assertSqliteDatabaseUrl("prisma/seed.ts"),
+const adapter = new PrismaPg({
+  connectionString: getDatabaseUrl(),
 });
 
 const prisma = new PrismaClient({ adapter });
@@ -159,9 +158,6 @@ const applications = [
 ] as const;
 
 async function main() {
-  // This seed script is still SQLite-first for local development. Once the
-  // Prisma provider flips to PostgreSQL, we can keep the seed data but drop
-  // the SQLite-only guard and bootstrap workaround.
   await prisma.applicationTag.deleteMany();
   await prisma.contact.deleteMany();
   await prisma.application.deleteMany();
@@ -176,10 +172,9 @@ async function main() {
     data: {
       email: demoUser.email,
       name: demoUser.name,
+      passwordHash,
     },
   });
-
-  await setUserPasswordHash(user.id, passwordHash);
 
   for (const application of applications) {
     const created = await prisma.application.create({

@@ -189,7 +189,7 @@ export function DashboardShell({
                   Prisma schema with internship-tracker-specific models for applications, contacts, and tags.
                 </li>
                 <li className="rounded-2xl bg-white/90 px-4 py-3">
-                  Local SQLite database for fast iteration until we add PostgreSQL infrastructure.
+                  Local PostgreSQL setup through Docker so development matches the production database shape much more closely.
                 </li>
                 <li className="rounded-2xl bg-white/90 px-4 py-3">
                   Seeded demo data so the UI stays explorable before you add your own records.
@@ -329,7 +329,10 @@ export function DashboardShell({
 
           <div className="mt-6">
             {selectedView === "board" ? (
-              <ApplicationBoard applications={filteredApplications} />
+              <ApplicationBoard
+                applications={filteredApplications}
+                sort={selectedSort}
+              />
             ) : (
               <div className="overflow-hidden rounded-[1.5rem] border border-slate-200">
                 <div className="hidden grid-cols-[1.1fr_1.4fr_0.8fr_0.9fr_1.2fr_1.4fr] gap-3 bg-slate-100/80 px-4 py-3 text-xs font-medium uppercase tracking-[0.12em] text-slate-500 md:grid">
@@ -383,11 +386,6 @@ export function DashboardShell({
                       </div>
 
                       <div>
-                        <span
-                          className={`inline-flex rounded-full px-3 py-1 text-xs font-medium ${statusColors[application.status]}`}
-                        >
-                          {statusLabels[application.status]}
-                        </span>
                         {/* Quick updates make the tracker usable for day-to-day recruiting
                             without forcing a full-page edit for every stage change. */}
                         <QuickStatusForm

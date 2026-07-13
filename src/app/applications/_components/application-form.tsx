@@ -53,6 +53,33 @@ function Field({
   placeholder?: string;
   type?: "text" | "date" | "url";
 }) {
+  function openDatePicker(input: HTMLInputElement) {
+    input.showPicker?.();
+  }
+
+  function handleDateFieldPointerDown(
+    event: React.PointerEvent<HTMLInputElement>,
+  ) {
+    if (type !== "date") {
+      return;
+    }
+
+    // Some browser date inputs consume the first click just to focus the
+    // control. Triggering the picker during pointer-down opens the calendar
+    // on the first press instead of making the user click twice.
+    openDatePicker(event.currentTarget);
+  }
+
+  function handleDateFieldClick(event: React.MouseEvent<HTMLInputElement>) {
+    if (type !== "date") {
+      return;
+    }
+
+    // Keeping the click fallback helps browsers that ignore showPicker during
+    // pointer-down but still allow it during the click gesture.
+    openDatePicker(event.currentTarget);
+  }
+
   return (
     <label className="grid gap-2">
       <span className="text-sm font-medium text-slate-700">{label}</span>
@@ -62,6 +89,8 @@ function Field({
         defaultValue={defaultValue}
         required={required}
         placeholder={placeholder}
+        onPointerDown={handleDateFieldPointerDown}
+        onClick={handleDateFieldClick}
         className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-800 outline-none transition focus:border-slate-400"
       />
     </label>

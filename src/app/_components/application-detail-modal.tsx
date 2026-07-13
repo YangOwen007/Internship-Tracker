@@ -25,7 +25,7 @@ export function ApplicationDetailModal({
       onClick={onClose}
     >
       <div
-        className="panel max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-[2rem] p-6 sm:p-7"
+        className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-[2rem] border border-slate-200 bg-[#fffaf5] p-6 shadow-[0_20px_50px_rgba(24,33,47,0.18)] sm:p-7"
         onClick={(event) => event.stopPropagation()}
       >
         <div className="flex items-start justify-between gap-4">

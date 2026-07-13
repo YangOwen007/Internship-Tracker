@@ -1,9 +1,6 @@
-import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
+import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "@/generated/prisma/client";
-import {
-  getDatabaseMode,
-  assertSqliteDatabaseUrl,
-} from "@/lib/database-config";
+import { getDatabaseUrl } from "@/lib/database-config";
 
 const globalForPrisma = globalThis as unknown as {
   prisma?: PrismaClient;
@@ -12,20 +9,13 @@ const globalForPrisma = globalThis as unknown as {
 export const prisma =
   globalForPrisma.prisma ??
   (() => {
-    // SQLite still uses the adapter-based path for local reliability, but the
-    // shared Prisma client can now fall back to a standard connection-string
-    // setup when we complete the PostgreSQL provider switch.
-    if (getDatabaseMode() === "sqlite") {
-      const adapter = new PrismaBetterSqlite3({
-        url: assertSqliteDatabaseUrl("src/lib/prisma.ts"),
-      });
+    // Prisma 7 expects a driver adapter at runtime, so the shared client is
+    // created against the configured PostgreSQL connection string here.
+    const adapter = new PrismaPg({
+      connectionString: getDatabaseUrl(),
+    });
 
-      return new PrismaClient({ adapter });
-    }
-
-    return new PrismaClient(
-      {} as ConstructorParameters<typeof PrismaClient>[0],
-    );
+    return new PrismaClient({ adapter });
   })();
 
 if (process.env.NODE_ENV !== "production") {

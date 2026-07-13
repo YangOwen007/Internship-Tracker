@@ -1,6 +1,6 @@
 # Deployment Guide
 
-This app is currently easiest to develop locally with SQLite, but the intended deployed setup is:
+This app now uses PostgreSQL locally and is intended to deploy with the same database shape in production:
 
 - Next.js app host
 - PostgreSQL database
@@ -27,11 +27,10 @@ NEXTAUTH_URL="https://your-domain.example"
 
 ## Before Deploying
 
-1. Finish the PostgreSQL provider switch in Prisma.
-2. Regenerate the Prisma client cleanly.
-3. Replace the SQLite bootstrap path with migrations.
-4. Seed a test environment.
-5. Run `pnpm lint`, `pnpm typecheck`, and `pnpm build`.
+1. Apply Prisma migrations to the target PostgreSQL database.
+2. Seed a test environment.
+3. Run `pnpm lint`, `pnpm typecheck`, and `pnpm build`.
+4. Verify auth and dashboard flows against the deployed database.
 
 ## Useful Production Checks
 

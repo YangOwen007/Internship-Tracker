@@ -9,6 +9,20 @@ on:
 jobs:
   verify:
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: internship_tracker
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d internship_tracker"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
 
     steps:
       - name: Check out repository
@@ -32,9 +46,10 @@ jobs:
         run: |
           cp .env.example .env
           echo 'NEXTAUTH_SECRET=ci-local-secret' >> .env
+          echo 'NEXTAUTH_URL=http://localhost:3000' >> .env
 
-      - name: Bootstrap local database
-        run: pnpm db:setup:direct
+      - name: Apply migrations and seed database
+        run: pnpm db:setup
 
       - name: Lint
         run: pnpm lint
