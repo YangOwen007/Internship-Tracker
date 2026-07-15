@@ -2,7 +2,6 @@ import { ApplicationStatus as PrismaApplicationStatus } from "@/generated/prisma
 import {
   BreakdownDatum,
   ApplicationRecord,
-  buildWeeklyApplications,
   getDashboardMetrics,
   PriorityApplication,
   statusChartColors,
@@ -175,6 +174,5 @@ export async function getDashboardData(userId: string) {
     locationBreakdown: buildLocationBreakdown(records),
     priorityQueue: buildPriorityQueue(records),
     statusBreakdown: buildStatusBreakdown(records),
-    weeklyApplications: buildWeeklyApplications(records),
   };
 }

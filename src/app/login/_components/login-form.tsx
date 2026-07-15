@@ -36,7 +36,10 @@ export function LoginForm({ callbackUrl }: LoginFormProps) {
   return (
     <form action={handleSubmit} className="grid gap-5">
       {error ? (
-        <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+        <div
+          className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700"
+          role="alert"
+        >
           {error}
         </div>
       ) : null}
@@ -49,6 +52,7 @@ export function LoginForm({ callbackUrl }: LoginFormProps) {
           name="email"
           type="email"
           required
+          autoComplete="email"
           className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-800 outline-none transition focus:border-slate-400"
           placeholder="owen@example.com"
         />
@@ -61,6 +65,7 @@ export function LoginForm({ callbackUrl }: LoginFormProps) {
           type="password"
           required
           minLength={8}
+          autoComplete="current-password"
           className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-800 outline-none transition focus:border-slate-400"
           placeholder="At least 8 characters"
         />

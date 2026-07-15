@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
+import { useState, useTransition } from "react";
 import { updateApplicationStatus } from "@/app/applications/actions";
 import {
   ApplicationRecord,
@@ -20,46 +21,55 @@ export function QuickStatusForm({
   applicationId,
   currentStatus,
 }: QuickStatusFormProps) {
+  const router = useRouter();
   const [isEditing, setIsEditing] = useState(false);
-  const [optimisticStatus, setOptimisticStatus] = useState(currentStatus);
+  const [optimisticStatus, setOptimisticStatus] = useState<
+    ApplicationRecord["status"] | null
+  >(null);
   const [isPending, startTransition] = useTransition();
-
-  useEffect(() => {
-    setOptimisticStatus(currentStatus);
-  }, [currentStatus]);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const displayedStatus = optimisticStatus ?? currentStatus;
 
   async function handleStatusChange(nextStatus: ApplicationRecord["status"]) {
-    const previousStatus = optimisticStatus;
     const formData = new FormData();
     formData.set("status", nextStatus);
 
+    setErrorMessage(null);
     setOptimisticStatus(nextStatus);
     setIsEditing(false);
 
     startTransition(async () => {
       try {
         await updateApplicationStatus(applicationId, formData);
-      } catch (error) {
+        router.refresh();
+      } catch {
         // If the server update fails, we roll the label back so the UI
         // still reflects the saved state instead of a misleading optimistic one.
-        setOptimisticStatus(previousStatus);
+        setOptimisticStatus(null);
         setIsEditing(true);
-        throw error;
+        setErrorMessage("Status update failed. Try again.");
       }
     });
   }
 
   if (!isEditing) {
     return (
-      <button
-        type="button"
-        onClick={() => setIsEditing(true)}
-        disabled={isPending}
-        className={`mt-3 rounded-full px-3 py-2 text-xs font-medium transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-70 ${statusColors[optimisticStatus]}`}
-        aria-label="Edit application status"
-      >
-        {statusLabels[optimisticStatus]}
-      </button>
+      <div className="mt-3">
+        <button
+          type="button"
+          onClick={() => setIsEditing(true)}
+          disabled={isPending}
+          className={`rounded-full px-3 py-2 text-xs font-medium transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-70 ${statusColors[displayedStatus]}`}
+          aria-label="Edit application status"
+        >
+          {statusLabels[displayedStatus]}
+        </button>
+        {errorMessage ? (
+          <p className="mt-2 text-xs text-rose-700" role="alert">
+            {errorMessage}
+          </p>
+        ) : null}
+      </div>
     );
   }
 
@@ -71,7 +81,7 @@ export function QuickStatusForm({
       <select
         id={`status-${applicationId}`}
         autoFocus
-        value={optimisticStatus}
+        value={displayedStatus}
         onChange={(event) =>
           handleStatusChange(event.target.value as ApplicationRecord["status"])
         }

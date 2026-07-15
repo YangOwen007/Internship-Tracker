@@ -5,6 +5,10 @@ export const metadata: Metadata = {
   title: "Internship Tracker",
   description:
     "A polished internship application tracker with dashboard analytics, pipeline visibility, and student recruiting workflows.",
+  robots: {
+    index: false,
+    follow: false,
+  },
 };
 
 export default function RootLayout({

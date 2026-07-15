@@ -1,10 +1,14 @@
 "use server";
 
 import { hash } from "bcryptjs";
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
-import { setUserPasswordHash } from "@/lib/user-account-store";
+import {
+  consumeRateLimit,
+  getClientIpFromHeaders,
+} from "@/lib/security";
 
 export type SignupFormState = {
   error: string | null;
@@ -19,7 +23,8 @@ const signupSchema = z.object({
   email: z.email("Please enter a valid email address.").trim().toLowerCase(),
   password: z
     .string()
-    .min(8, "Password must be at least 8 characters long."),
+    .min(8, "Password must be at least 8 characters long.")
+    .max(72, "Password must be 72 characters or fewer."),
 });
 
 export async function signup(
@@ -46,6 +51,26 @@ export async function signup(
     };
   }
 
+  const requestHeaders = await headers();
+  const clientIp = getClientIpFromHeaders(requestHeaders);
+  const signupRateLimit = consumeRateLimit(
+    `auth:signup:${clientIp}:${parsedValues.data.email}`,
+    {
+      limit: 5,
+      windowMs: 10 * 60 * 1000,
+    },
+  );
+
+  if (!signupRateLimit.allowed) {
+    return {
+      error: "Too many sign-up attempts. Please wait a minute and try again.",
+      values: {
+        name: rawValues.name,
+        email: rawValues.email,
+      },
+    };
+  }
+
   const existingUser = await prisma.user.findUnique({
     where: {
       email: parsedValues.data.email,
@@ -54,7 +79,7 @@ export async function signup(
 
   if (existingUser) {
     return {
-      error: "An account with that email already exists.",
+      error: "Unable to create that account. If you already registered, try signing in instead.",
       values: {
         name: rawValues.name,
         email: rawValues.email,

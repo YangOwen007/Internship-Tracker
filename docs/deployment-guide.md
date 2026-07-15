@@ -17,8 +17,6 @@ This app now uses PostgreSQL locally and is intended to deploy with the same dat
 
 ## Example Production Env
 
-Use `.env.production.example` as the template.
-
 ```bash
 DATABASE_URL="postgresql://username:password@host:5432/internship_tracker?schema=public"
 NEXTAUTH_SECRET="replace-this-with-a-long-random-string"

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useDeferredValue, useState } from "react";
+import { useDeferredValue, useMemo, useState } from "react";
 import { ApplicationBoard } from "@/app/_components/application-board";
 import { ApplicationDetailModal } from "@/app/_components/application-detail-modal";
 import { ApplicationFilters } from "@/app/_components/application-filters";
@@ -66,57 +66,79 @@ export function DashboardShell({
 
   // Keeping filter state on the client lets the workspace update instantly
   // instead of forcing the whole page through a server round-trip.
-  const filteredApplications = sortApplications(
-    filterApplications(
-      applications,
-      deferredSearch,
-      selectedStatus,
-      selectedLocation,
-    ),
-    selectedSort,
+  const filteredApplications = useMemo(
+    () =>
+      sortApplications(
+        filterApplications(
+          applications,
+          deferredSearch,
+          selectedStatus,
+          selectedLocation,
+        ),
+        selectedSort,
+      ),
+    [applications, deferredSearch, selectedLocation, selectedSort, selectedStatus],
   );
-  const selectedApplication =
-    applications.find((application) => application.id === selectedApplicationId) ??
-    null;
-  const availableLocations = Array.from(
-    new Set(applications.map((application) => application.location)),
-  ).sort((left, right) => left.localeCompare(right));
-  const statusTotals = Object.fromEntries(
-    statuses.map((status) => [
-      status,
-      filteredApplications.filter((application) => application.status === status),
-    ]),
-  ) as Record<ApplicationStatus, ApplicationRecord[]>;
-  const weeklyApplications = buildWeeklyApplications(
-    applications,
-    selectedTimeframe === "all" ? "all" : Number(selectedTimeframe),
+  const selectedApplication = useMemo(
+    () =>
+      applications.find((application) => application.id === selectedApplicationId) ??
+      null,
+    [applications, selectedApplicationId],
   );
-  const metricCards = [
-    {
-      label: "Applications",
-      value: dashboardMetrics.total,
-      detail: `${dashboardMetrics.active} active opportunities across the pipeline`,
-      accent: "var(--accent-cool)",
-    },
-    {
-      label: "Response Rate",
-      value: `${dashboardMetrics.responseRate}%`,
-      detail: "Counts OA, interview progress, offers, and explicit rejections",
-      accent: "var(--success)",
-    },
-    {
-      label: "Interview Rate",
-      value: `${dashboardMetrics.interviewRate}%`,
-      detail: "Signal for whether targeting and resume positioning are working",
-      accent: "var(--warning)",
-    },
-    {
-      label: "Offers",
-      value: `${dashboardMetrics.offerRate}%`,
-      detail: `${dashboardMetrics.deadlines} upcoming deadlines and follow-ups tracked`,
-      accent: "var(--accent)",
-    },
-  ];
+  const availableLocations = useMemo(
+    () =>
+      Array.from(
+        new Set(applications.map((application) => application.location)),
+      ).sort((left, right) => left.localeCompare(right)),
+    [applications],
+  );
+  const statusTotals = useMemo(
+    () =>
+      Object.fromEntries(
+        statuses.map((status) => [
+          status,
+          filteredApplications.filter((application) => application.status === status),
+        ]),
+      ) as Record<ApplicationStatus, ApplicationRecord[]>,
+    [filteredApplications],
+  );
+  const weeklyApplications = useMemo(
+    () =>
+      buildWeeklyApplications(
+        applications,
+        selectedTimeframe === "all" ? "all" : Number(selectedTimeframe),
+      ),
+    [applications, selectedTimeframe],
+  );
+  const metricCards = useMemo(
+    () => [
+      {
+        label: "Applications",
+        value: dashboardMetrics.total,
+        detail: `${dashboardMetrics.active} active opportunities across the pipeline`,
+        accent: "var(--accent-cool)",
+      },
+      {
+        label: "Response Rate",
+        value: `${dashboardMetrics.responseRate}%`,
+        detail: "Counts OA, interview progress, offers, and explicit rejections",
+        accent: "var(--success)",
+      },
+      {
+        label: "Interview Rate",
+        value: `${dashboardMetrics.interviewRate}%`,
+        detail: "Signal for whether targeting and resume positioning are working",
+        accent: "var(--warning)",
+      },
+      {
+        label: "Offers",
+        value: `${dashboardMetrics.offerRate}%`,
+        detail: `${dashboardMetrics.deadlines} upcoming deadlines and follow-ups tracked`,
+        accent: "var(--accent)",
+      },
+    ],
+    [dashboardMetrics],
+  );
 
   function clearFilters() {
     setSearch("");

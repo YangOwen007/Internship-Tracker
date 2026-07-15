@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect, useRef } from "react";
 import { ApplicationRecord, formatDate, statusColors, statusLabels } from "@/lib/applications";
 
 type ApplicationDetailModalProps = {
@@ -12,6 +13,34 @@ export function ApplicationDetailModal({
   application,
   onClose,
 }: ApplicationDetailModalProps) {
+  const closeButtonRef = useRef<HTMLButtonElement | null>(null);
+
+  useEffect(() => {
+    if (!application) {
+      return;
+    }
+
+    const previousActiveElement =
+      document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    const previousOverflow = document.body.style.overflow;
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        onClose();
+      }
+    }
+
+    document.body.style.overflow = "hidden";
+    closeButtonRef.current?.focus();
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", handleKeyDown);
+      previousActiveElement?.focus();
+    };
+  }, [application, onClose]);
+
   if (!application) {
     return null;
   }
@@ -22,6 +51,7 @@ export function ApplicationDetailModal({
       role="dialog"
       aria-modal="true"
       aria-labelledby="application-detail-title"
+      aria-describedby="application-detail-summary"
       onClick={onClose}
     >
       <div
@@ -38,7 +68,7 @@ export function ApplicationDetailModal({
               >
                 {application.company}
               </h2>
-              <p className="mt-2 text-base text-slate-600">
+              <p id="application-detail-summary" className="mt-2 text-base text-slate-600">
                 {application.role} in {application.location}
               </p>
             </div>
@@ -58,6 +88,7 @@ export function ApplicationDetailModal({
           </div>
 
           <button
+            ref={closeButtonRef}
             type="button"
             onClick={onClose}
             className="rounded-full border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 transition-colors hover:border-slate-300 hover:text-slate-950"

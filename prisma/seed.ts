@@ -2,6 +2,7 @@ import "dotenv/config";
 
 import { PrismaPg } from "@prisma/adapter-pg";
 import bcrypt from "bcryptjs";
+import { randomBytes } from "node:crypto";
 import {
   ApplicationStatus,
   PrismaClient,
@@ -13,11 +14,15 @@ const adapter = new PrismaPg({
 });
 
 const prisma = new PrismaClient({ adapter });
+const databaseUrl = getDatabaseUrl();
+const configuredDemoPassword = process.env.SEED_DEMO_PASSWORD?.trim();
+const demoPassword =
+  configuredDemoPassword || randomBytes(12).toString("base64url");
 
 const demoUser = {
   email: "owen.yang.demo@internship-tracker.local",
   name: "Owen Yang",
-  password: "demo12345",
+  password: demoPassword,
 };
 
 const applications = [
@@ -157,7 +162,28 @@ const applications = [
   },
 ] as const;
 
+function assertSafeSeedTarget(url: string) {
+  // The seed script deletes existing rows before recreating demo data, so we
+  // refuse to run against non-local databases unless the caller opts in.
+  if (process.env.ALLOW_DESTRUCTIVE_SEED === "true") {
+    return;
+  }
+
+  const parsed = new URL(url);
+  const isLocalDatabase =
+    ["localhost", "127.0.0.1"].includes(parsed.hostname) ||
+    parsed.hostname.endsWith(".internal");
+
+  if (!isLocalDatabase) {
+    throw new Error(
+      "Refusing to seed a non-local database. Set ALLOW_DESTRUCTIVE_SEED=true if you intentionally want to overwrite an external environment.",
+    );
+  }
+}
+
 async function main() {
+  assertSafeSeedTarget(databaseUrl);
+
   await prisma.applicationTag.deleteMany();
   await prisma.contact.deleteMany();
   await prisma.application.deleteMany();
@@ -231,7 +257,7 @@ async function main() {
   }
 
   console.log(
-    `Seeded ${applications.length} internship applications for ${user.email} (password: ${demoUser.password})`,
+    `Seeded ${applications.length} internship applications for ${user.email}. Demo password for this run: ${demoUser.password}`,
   );
 }
 

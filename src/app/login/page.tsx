@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { getServerSession } from "next-auth";
 import { LoginForm } from "@/app/login/_components/login-form";
 import { authOptions } from "@/lib/auth";
+import { sanitizeCallbackPath } from "@/lib/security";
 
 type LoginPageProps = {
   searchParams: Promise<{
@@ -18,7 +19,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
   }
 
   const params = await searchParams;
-  const callbackUrl = params.callbackUrl?.trim() || "/";
+  const callbackUrl = sanitizeCallbackPath(params.callbackUrl);
   const showRegisteredMessage = params.registered === "1";
 
   return (
@@ -38,7 +39,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
               Track applications, interviews, deadlines, and recruiter contacts in one place.
             </div>
             <div className="rounded-2xl bg-white/85 p-4">
-              Use the seeded demo account or create your own account to start adding real data.
+              Create your own account, or use a locally seeded demo account if you configured one during setup.
             </div>
           </div>
         </div>
@@ -48,12 +49,11 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
           <h2 className="mt-3 text-2xl font-semibold tracking-[-0.03em] text-slate-950">
             Welcome back
           </h2>
-          <p className="mt-3 text-sm leading-6 text-slate-600">
-            Demo login: <span className="font-mono">owen.yang.demo@internship-tracker.local</span> /{" "}
-            <span className="font-mono">demo12345</span>
-          </p>
           {showRegisteredMessage ? (
-            <div className="mt-6 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
+            <div
+              className="mt-6 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700"
+              role="status"
+            >
               Account created. You can sign in now.
             </div>
           ) : null}

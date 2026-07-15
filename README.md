@@ -60,7 +60,7 @@ Run:
 
 ```bash
 pnpm db:postgres:up
-cp .env.postgres.example .env
+cp .env.example .env
 pnpm db:setup
 pnpm dev
 ```
@@ -84,14 +84,14 @@ pnpm build
 
 ## Demo Account
 
-- Email: `owen.yang.demo@internship-tracker.local`
-- Password: `demo12345`
+- The seed script creates `owen.yang.demo@internship-tracker.local`.
+- The demo password is printed when `pnpm db:seed` or `pnpm db:setup` runs.
+- Set `SEED_DEMO_PASSWORD` in `.env` if you want a stable local demo password.
 
 ## Deployment And PostgreSQL Prep
 
 - [docker-compose.postgres.yml](C:/Users/centu/Documents/Internship%20Tracker/docker-compose.postgres.yml)
-- [.env.postgres.example](C:/Users/centu/Documents/Internship%20Tracker/.env.postgres.example)
-- [.env.production.example](C:/Users/centu/Documents/Internship%20Tracker/.env.production.example)
+- [.env.example](C:/Users/centu/Documents/Internship%20Tracker/.env.example)
 - [docs/postgres-migration-plan.md](C:/Users/centu/Documents/Internship%20Tracker/docs/postgres-migration-plan.md)
 - [docs/deployment-guide.md](C:/Users/centu/Documents/Internship%20Tracker/docs/deployment-guide.md)
 

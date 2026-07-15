@@ -1,15 +1,17 @@
 import { NextResponse } from "next/server";
-import { getDatabaseUrl } from "@/lib/database-config";
 
 export async function GET() {
   // This lightweight endpoint is useful for deployment smoke tests and later
-  // for uptime monitoring, without exposing private app data.
-  return NextResponse.json({
-    status: "ok",
-    timestamp: new Date().toISOString(),
-    databaseMode: getDatabaseUrl().startsWith("postgresql:")
-      ? "postgresql"
-      : "unknown",
-    authConfigured: Boolean(process.env.NEXTAUTH_SECRET),
-  });
+  // for uptime monitoring, without exposing config details to anonymous callers.
+  return NextResponse.json(
+    {
+      status: "ok",
+      timestamp: new Date().toISOString(),
+    },
+    {
+      headers: {
+        "Cache-Control": "no-store",
+      },
+    },
+  );
 }

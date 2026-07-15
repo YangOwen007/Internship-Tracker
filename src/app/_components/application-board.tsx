@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useMemo, useOptimistic, useTransition } from "react";
 import { BoardColumn } from "@/app/_components/board-column";
 import { updateApplicationStatus } from "@/app/applications/actions";
@@ -20,6 +21,7 @@ export function ApplicationBoard({
   applications,
   sort,
 }: ApplicationBoardProps) {
+  const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [optimisticApplications, applyOptimisticMove] = useOptimistic(
     applications,
@@ -66,7 +68,13 @@ export function ApplicationBoard({
     applyOptimisticMove({ applicationId, nextStatus });
 
     startTransition(async () => {
-      await updateApplicationStatus(applicationId, formData);
+      try {
+        await updateApplicationStatus(applicationId, formData);
+      } finally {
+        // Refreshing after the mutation keeps the board aligned with the
+        // canonical server state, including failed writes and concurrent edits.
+        router.refresh();
+      }
     });
   }
 

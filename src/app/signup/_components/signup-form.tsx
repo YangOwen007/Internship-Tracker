@@ -28,7 +28,10 @@ export function SignupForm({ initialState }: { initialState: SignupFormState }) 
   return (
     <form action={formAction} className="grid gap-5">
       {state.error ? (
-        <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+        <div
+          className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700"
+          role="alert"
+        >
           {state.error}
         </div>
       ) : null}
@@ -40,6 +43,7 @@ export function SignupForm({ initialState }: { initialState: SignupFormState }) 
           type="text"
           required
           defaultValue={state.values.name}
+          autoComplete="name"
           className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-800 outline-none transition focus:border-slate-400"
           placeholder="Owen Yang"
         />
@@ -52,6 +56,7 @@ export function SignupForm({ initialState }: { initialState: SignupFormState }) 
           type="email"
           required
           defaultValue={state.values.email}
+          autoComplete="email"
           className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-800 outline-none transition focus:border-slate-400"
           placeholder="owen@example.com"
         />
@@ -64,6 +69,7 @@ export function SignupForm({ initialState }: { initialState: SignupFormState }) 
           type="password"
           required
           minLength={8}
+          autoComplete="new-password"
           className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-800 outline-none transition focus:border-slate-400"
           placeholder="At least 8 characters"
         />

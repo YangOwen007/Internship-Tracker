@@ -2,9 +2,13 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { ApplicationStatus as PrismaApplicationStatus } from "@/generated/prisma/client";
+import {
+  Prisma,
+  ApplicationStatus as PrismaApplicationStatus,
+} from "@/generated/prisma/client";
 import { requireCurrentUser } from "@/lib/auth-user";
 import { prisma } from "@/lib/prisma";
+import { isSafeHttpUrl } from "@/lib/security";
 
 export type ApplicationFormValues = {
   company: string;
@@ -27,6 +31,19 @@ export type ApplicationFormState = {
   error: string | null;
   values: ApplicationFormValues;
 };
+
+const FIELD_LENGTH_LIMITS = {
+  company: 120,
+  role: 120,
+  location: 120,
+  salary: 60,
+  resumeVersion: 120,
+  contactName: 120,
+  contactTitle: 120,
+  contactChannel: 120,
+  tags: 300,
+  notes: 4000,
+} as const;
 
 function normalizeStatus(value: string) {
   const mapping: Record<string, PrismaApplicationStatus> = {
@@ -67,6 +84,19 @@ function readFormValues(formData: FormData): ApplicationFormValues {
   };
 }
 
+function isValidDateInput(value: string) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+    return false;
+  }
+
+  const parsed = new Date(`${value}T00:00:00Z`);
+
+  return (
+    !Number.isNaN(parsed.getTime()) &&
+    parsed.toISOString().slice(0, 10) === value
+  );
+}
+
 // We keep validation manual for now so the shape stays easy to inspect while
 // still enforcing the real constraints our database logic expects.
 function validateApplicationForm(values: ApplicationFormValues) {
@@ -78,8 +108,16 @@ function validateApplicationForm(values: ApplicationFormValues) {
     return "Application date is required.";
   }
 
+  if (!isValidDateInput(values.appliedAt)) {
+    return "Application date must be a real calendar date.";
+  }
+
   if (!values.jobLink) {
     return "Job link is required.";
+  }
+
+  if (values.nextDeadline && !isValidDateInput(values.nextDeadline)) {
+    return "Next deadline must be a real calendar date.";
   }
 
   const normalizedStatus = normalizeStatus(values.status);
@@ -99,10 +137,28 @@ function validateApplicationForm(values: ApplicationFormValues) {
     return "If you add a contact, include name, title, and channel together.";
   }
 
-  try {
-    new URL(values.jobLink);
-  } catch {
-    return "Job link must be a valid URL.";
+  // Restricting links to http(s) prevents dangerous schemes like javascript:
+  // from being stored and later executed through a normal anchor click.
+  if (!isSafeHttpUrl(values.jobLink)) {
+    return "Job link must be a valid http(s) URL.";
+  }
+
+  for (const [fieldName, maxLength] of Object.entries(FIELD_LENGTH_LIMITS)) {
+    const value = values[fieldName as keyof typeof FIELD_LENGTH_LIMITS];
+
+    if (value.length > maxLength) {
+      return `${fieldName} is too long.`;
+    }
+  }
+
+  const parsedTags = parseTagInput(values.tags);
+
+  if (parsedTags.length > 10) {
+    return "Please keep tags to 10 or fewer.";
+  }
+
+  if (parsedTags.some((tag) => tag.length > 32)) {
+    return "Each tag must be 32 characters or fewer.";
   }
 
   return null;
@@ -119,17 +175,22 @@ function parseTagInput(rawTags: string) {
   );
 }
 
-async function saveTags(applicationId: string, userId: string, rawTags: string) {
+async function saveTagsWithTransaction(
+  transactionClient: Prisma.TransactionClient,
+  applicationId: string,
+  userId: string,
+  rawTags: string,
+) {
   const tags = parseTagInput(rawTags);
 
-  await prisma.applicationTag.deleteMany({
+  await transactionClient.applicationTag.deleteMany({
     where: {
       applicationId,
     },
   });
 
   for (const tagName of tags) {
-    const tag = await prisma.tag.upsert({
+    const tag = await transactionClient.tag.upsert({
       where: {
         userId_name: {
           userId,
@@ -143,7 +204,7 @@ async function saveTags(applicationId: string, userId: string, rawTags: string) 
       },
     });
 
-    await prisma.applicationTag.create({
+    await transactionClient.applicationTag.create({
       data: {
         applicationId,
         tagId: tag.id,
@@ -152,7 +213,8 @@ async function saveTags(applicationId: string, userId: string, rawTags: string) 
   }
 }
 
-async function saveContact(
+async function saveContactWithTransaction(
+  transactionClient: Prisma.TransactionClient,
   applicationId: string,
   values: ApplicationFormValues,
 ) {
@@ -160,7 +222,7 @@ async function saveContact(
     values.contactName && values.contactTitle && values.contactChannel,
   );
 
-  await prisma.contact.deleteMany({
+  await transactionClient.contact.deleteMany({
     where: {
       applicationId,
     },
@@ -170,7 +232,7 @@ async function saveContact(
     return;
   }
 
-  await prisma.contact.create({
+  await transactionClient.contact.create({
     data: {
       applicationId,
       name: values.contactName,
@@ -209,26 +271,35 @@ export async function createApplication(
   const user = await requireCurrentUser();
   const status = normalizeStatus(values.status)!;
 
-  const application = await prisma.application.create({
-    data: {
-      userId: user.id,
-      company: values.company,
-      role: values.role,
-      location: values.location,
-      status,
-      appliedAt: new Date(`${values.appliedAt}T00:00:00`),
-      salary: values.salary || null,
-      jobLink: values.jobLink,
-      nextDeadline: values.nextDeadline
-        ? new Date(`${values.nextDeadline}T00:00:00`)
-        : null,
-      notes: values.notes,
-      resumeVersion: values.resumeVersion || null,
-    },
-  });
+  await prisma.$transaction(async (transactionClient) => {
+    // Grouping the application, contact, and tag writes into one transaction
+    // prevents half-saved records if any follow-up write fails.
+    const application = await transactionClient.application.create({
+      data: {
+        userId: user.id,
+        company: values.company,
+        role: values.role,
+        location: values.location,
+        status,
+        appliedAt: new Date(`${values.appliedAt}T00:00:00`),
+        salary: values.salary || null,
+        jobLink: values.jobLink,
+        nextDeadline: values.nextDeadline
+          ? new Date(`${values.nextDeadline}T00:00:00`)
+          : null,
+        notes: values.notes,
+        resumeVersion: values.resumeVersion || null,
+      },
+    });
 
-  await saveContact(application.id, values);
-  await saveTags(application.id, user.id, values.tags);
+    await saveContactWithTransaction(transactionClient, application.id, values);
+    await saveTagsWithTransaction(
+      transactionClient,
+      application.id,
+      user.id,
+      values.tags,
+    );
+  });
 
   revalidatePath("/");
   redirect("/");
@@ -265,28 +336,35 @@ export async function updateApplication(
     };
   }
 
-  await prisma.application.update({
-    where: {
-      id: applicationId,
-    },
-    data: {
-      company: values.company,
-      role: values.role,
-      location: values.location,
-      status,
-      appliedAt: new Date(`${values.appliedAt}T00:00:00`),
-      salary: values.salary || null,
-      jobLink: values.jobLink,
-      nextDeadline: values.nextDeadline
-        ? new Date(`${values.nextDeadline}T00:00:00`)
-        : null,
-      notes: values.notes,
-      resumeVersion: values.resumeVersion || null,
-    },
-  });
+  await prisma.$transaction(async (transactionClient) => {
+    await transactionClient.application.update({
+      where: {
+        id: applicationId,
+      },
+      data: {
+        company: values.company,
+        role: values.role,
+        location: values.location,
+        status,
+        appliedAt: new Date(`${values.appliedAt}T00:00:00`),
+        salary: values.salary || null,
+        jobLink: values.jobLink,
+        nextDeadline: values.nextDeadline
+          ? new Date(`${values.nextDeadline}T00:00:00`)
+          : null,
+        notes: values.notes,
+        resumeVersion: values.resumeVersion || null,
+      },
+    });
 
-  await saveContact(applicationId, values);
-  await saveTags(applicationId, user.id, values.tags);
+    await saveContactWithTransaction(transactionClient, applicationId, values);
+    await saveTagsWithTransaction(
+      transactionClient,
+      applicationId,
+      user.id,
+      values.tags,
+    );
+  });
 
   revalidatePath("/");
   redirect("/");
