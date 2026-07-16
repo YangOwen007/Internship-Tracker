@@ -2,7 +2,6 @@
 
 import { hash } from "bcryptjs";
 import { headers } from "next/headers";
-import { redirect } from "next/navigation";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import {
@@ -12,6 +11,7 @@ import {
 
 export type SignupFormState = {
   error: string | null;
+  createdEmail: string | null;
   values: {
     name: string;
     email: string;
@@ -44,6 +44,7 @@ export async function signup(
   if (!parsedValues.success) {
     return {
       error: parsedValues.error.issues[0]?.message ?? "Invalid sign-up details.",
+      createdEmail: null,
       values: {
         name: rawValues.name,
         email: rawValues.email,
@@ -64,6 +65,7 @@ export async function signup(
   if (!signupRateLimit.allowed) {
     return {
       error: "Too many sign-up attempts. Please wait a minute and try again.",
+      createdEmail: null,
       values: {
         name: rawValues.name,
         email: rawValues.email,
@@ -80,6 +82,7 @@ export async function signup(
   if (existingUser) {
     return {
       error: "Unable to create that account. If you already registered, try signing in instead.",
+      createdEmail: null,
       values: {
         name: rawValues.name,
         email: rawValues.email,
@@ -97,5 +100,12 @@ export async function signup(
     },
   });
 
-  redirect("/login?registered=1");
+  return {
+    error: null,
+    createdEmail: parsedValues.data.email,
+    values: {
+      name: "",
+      email: "",
+    },
+  };
 }

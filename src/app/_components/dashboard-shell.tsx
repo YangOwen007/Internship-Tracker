@@ -63,6 +63,7 @@ export function DashboardShell({
   const [selectedTimeframe, setSelectedTimeframe] = useState<"6" | "12" | "24" | "all">("6");
   const [selectedApplicationId, setSelectedApplicationId] = useState<string | null>(null);
   const deferredSearch = useDeferredValue(search);
+  const hasApplications = applications.length > 0;
 
   // Keeping filter state on the client lets the workspace update instantly
   // instead of forcing the whole page through a server round-trip.
@@ -150,29 +151,28 @@ export function DashboardShell({
   return (
     <>
       <div className="mx-auto flex w-full max-w-7xl flex-1 flex-col gap-6 px-4 sm:px-6 lg:px-8">
-        <section className="panel overflow-hidden rounded-[2rem]">
+        <section id="overview" className="panel overflow-hidden rounded-[2rem]">
           <div className="grid gap-8 px-6 py-8 lg:grid-cols-[1.3fr_0.9fr] lg:px-10 lg:py-10">
             <div className="space-y-6">
               <div className="flex flex-wrap items-center gap-3">
                 <span className="eyebrow rounded-full bg-white/70 px-3 py-1 text-xs">
-                  Internship Tracker MVP
+                  Internship search command center
                 </span>
                 <span className="rounded-full bg-slate-900 px-3 py-1 font-mono text-xs text-white">
-                  Prisma-backed user data
+                  Private workspace
                 </span>
               </div>
               <div className="max-w-3xl space-y-4">
-                <p className="eyebrow text-xs">Student recruiting, organized like a product</p>
+                <p className="eyebrow text-xs">Track momentum, deadlines, and next steps in one place</p>
                 <h1 className="text-4xl font-semibold tracking-[-0.04em] text-slate-950 sm:text-5xl lg:text-6xl">
-                  A serious internship tracker that feels closer to a recruiting CRM than a class CRUD app.
+                  Keep your recruiting search calm, clear, and easy to act on.
                 </h1>
                 <p className="max-w-2xl text-base leading-7 text-slate-600 sm:text-lg">
-                  The dashboard is now reading from a real database instead of a hardcoded
-                  array. With authentication in place, each user now sees their own recruiting
-                  pipeline and analytics.
+                  Review active applications, upcoming deadlines, and the stages that need
+                  attention so you always know what to do next.
                 </p>
               </div>
-              <div className="flex flex-wrap gap-3">
+              <div className="flex flex-wrap gap-3" data-tour-id="hero-actions">
                 <a
                   className="rounded-full bg-[color:var(--foreground)] px-5 py-3 text-sm font-medium !text-white transition-colors hover:bg-slate-800"
                   href="#applications"
@@ -194,35 +194,82 @@ export function DashboardShell({
               </div>
             </div>
 
-            <div className="rounded-[1.75rem] border border-slate-200/80 bg-[linear-gradient(180deg,rgba(255,255,255,0.95),rgba(248,243,236,0.95))] p-5">
+            <div
+              className="rounded-[1.75rem] border border-slate-200/80 bg-[linear-gradient(180deg,rgba(255,255,255,0.95),rgba(248,243,236,0.95))] p-5"
+              data-tour-id="quick-snapshot"
+            >
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="eyebrow text-xs">Backend foundation</p>
+                  <p className="eyebrow text-xs">Quick snapshot</p>
                   <h2 className="mt-2 text-xl font-semibold text-slate-950">
-                    What changed
+                    Your search at a glance
                   </h2>
                 </div>
                 <div className="metric-ring flex h-16 w-16 items-center justify-center rounded-full bg-white text-lg font-semibold text-slate-950">
-                  DB
+                  {dashboardMetrics.total}
                 </div>
               </div>
               <ul className="mt-6 grid gap-3 text-sm text-slate-700">
                 <li className="rounded-2xl bg-white/90 px-4 py-3">
-                  Prisma schema with internship-tracker-specific models for applications, contacts, and tags.
+                  {dashboardMetrics.active} active opportunities are currently moving through your pipeline.
                 </li>
                 <li className="rounded-2xl bg-white/90 px-4 py-3">
-                  Local PostgreSQL setup through Docker so development matches the production database shape much more closely.
+                  {dashboardMetrics.deadlines} upcoming deadlines or follow-ups are worth watching.
                 </li>
                 <li className="rounded-2xl bg-white/90 px-4 py-3">
-                  Seeded demo data so the UI stays explorable before you add your own records.
+                  Response rate is {dashboardMetrics.responseRate}% across all tracked applications.
                 </li>
                 <li className="rounded-2xl bg-white/90 px-4 py-3">
-                  Server-side queries in Next.js, which is the same integration style we&apos;ll keep later.
+                  Interview rate is {dashboardMetrics.interviewRate}%, which helps you judge how your outreach is landing.
                 </li>
               </ul>
             </div>
           </div>
         </section>
+
+        {!hasApplications ? (
+          <section className="panel rounded-[1.5rem] p-5">
+            {/* First-use dashboards need a real onboarding moment so the app
+                still feels helpful before the user has any data to analyze. */}
+            <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
+              <div>
+                <p className="eyebrow text-xs">Start here</p>
+                <h2 className="mt-2 text-3xl font-semibold tracking-[-0.04em] text-slate-950">
+                  Add your first application to bring the tracker to life.
+                </h2>
+                <p className="mt-4 max-w-2xl text-sm leading-7 text-slate-600 sm:text-base">
+                  Once you add a role, this dashboard will start filling in with pipeline
+                  stages, deadlines, analytics, and follow-up priorities.
+                </p>
+                <div className="mt-6 flex flex-wrap gap-3">
+                  <Link
+                    href="/applications/new"
+                    className="rounded-full bg-[color:var(--foreground)] px-5 py-3 text-sm font-medium !text-white transition-colors hover:bg-slate-800"
+                  >
+                    Add your first application
+                  </Link>
+                  <a
+                    href="#applications"
+                    className="rounded-full border border-slate-300 bg-white px-5 py-3 text-sm font-medium text-slate-700 transition-colors hover:border-slate-400"
+                  >
+                    Preview the workspace
+                  </a>
+                </div>
+              </div>
+              <div className="grid gap-3 text-sm text-slate-700">
+                <div className="rounded-2xl bg-white/90 px-4 py-4">
+                  Save company, role, location, links, salary, and resume version.
+                </div>
+                <div className="rounded-2xl bg-white/90 px-4 py-4">
+                  Track stages like applied, OA, interview, final round, and offer.
+                </div>
+                <div className="rounded-2xl bg-white/90 px-4 py-4">
+                  Add contacts, notes, and deadlines so follow-ups never slip through.
+                </div>
+              </div>
+            </div>
+          </section>
+        ) : null}
 
         <section
           id="dashboard"
@@ -256,7 +303,11 @@ export function DashboardShell({
         </section>
 
         <section className="grid gap-4 xl:grid-cols-[1.2fr_0.8fr]">
-          <article className="panel rounded-[1.5rem] p-5">
+          <article
+            id="pipeline"
+            className="panel rounded-[1.5rem] p-5"
+            data-tour-id="pipeline-view"
+          >
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
                 <p className="eyebrow text-xs">Pipeline view</p>
@@ -265,7 +316,7 @@ export function DashboardShell({
                 </h2>
               </div>
               <p className="max-w-md text-sm leading-6 text-slate-600">
-                The layout is unchanged, but the cards below are now driven by actual database rows.
+                Scan each stage to see where momentum is building and where follow-up is still needed.
               </p>
             </div>
             <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
@@ -309,14 +360,19 @@ export function DashboardShell({
             </div>
           </article>
 
-          <PriorityQueue
-            applications={priorityQueue}
-            onOpenApplication={(applicationId) => setSelectedApplicationId(applicationId)}
-          />
+          <div id="next-actions" data-tour-id="next-actions">
+            <PriorityQueue
+              applications={priorityQueue}
+              onOpenApplication={(applicationId) => setSelectedApplicationId(applicationId)}
+            />
+          </div>
         </section>
 
         <section id="applications" className="panel rounded-[1.5rem] p-5">
-          <div className="flex flex-wrap items-center justify-between gap-3">
+          <div
+            className="flex flex-wrap items-center justify-between gap-3"
+            data-tour-id="workspace-controls"
+          >
             <div>
               <p className="eyebrow text-xs">Applications</p>
               <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-slate-950">
@@ -334,7 +390,7 @@ export function DashboardShell({
             </div>
           </div>
 
-          <div className="mt-6">
+          <div className="mt-6" data-tour-id="workspace-filters">
             <ApplicationFilters
               locations={availableLocations}
               search={search}
@@ -349,7 +405,7 @@ export function DashboardShell({
             />
           </div>
 
-          <div className="mt-6">
+          <div className="mt-6" data-tour-id="workspace-results">
             {selectedView === "board" ? (
               <ApplicationBoard
                 applications={filteredApplications}
@@ -461,10 +517,10 @@ export function DashboardShell({
                       {/* Empty states matter because filters often fail due to user input,
                           not because the app is broken. */}
                       <p className="text-sm font-medium text-slate-700">
-                        No applications matched this view.
+                        No applications match these filters.
                       </p>
                       <p className="mt-2 text-sm text-slate-500">
-                        Try clearing one filter or broadening your search terms.
+                        Try clearing a filter or broadening your search terms.
                       </p>
                     </div>
                   ) : null}
@@ -474,16 +530,16 @@ export function DashboardShell({
             {selectedView === "board" && filteredApplications.length === 0 ? (
               <div className="mt-4 rounded-[1.5rem] border border-dashed border-slate-200 bg-white/70 px-4 py-8 text-center">
                 <p className="text-sm font-medium text-slate-700">
-                  No applications matched this board view.
+                  No applications match these filters.
                 </p>
                 <p className="mt-2 text-sm text-slate-500">
-                  Try clearing one filter or switching to a broader slice of your pipeline.
+                  Try clearing a filter or switching to a broader slice of your pipeline.
                 </p>
               </div>
             ) : null}
             <div className="mt-4 rounded-[1.5rem] bg-slate-50/80 px-4 py-3 text-sm text-slate-600">
-              Board view is best for moving applications through stages quickly. Table view is
-              better when you want to compare details across many records at once.
+              Use board view when you want to move quickly between stages, and table view when
+              you want to compare details across multiple applications.
             </div>
           </div>
         </section>

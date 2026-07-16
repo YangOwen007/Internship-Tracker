@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { SignOutButton } from "@/app/_components/sign-out-button";
+import { DashboardTour } from "@/app/_components/dashboard-tour";
 
 type AppHeaderProps = {
   name: string;
@@ -7,6 +7,8 @@ type AppHeaderProps = {
 };
 
 export function AppHeader({ name, email }: AppHeaderProps) {
+  const firstName = name.trim().split(/\s+/)[0] || "there";
+
   return (
     <header className="mx-auto flex w-full max-w-7xl items-center justify-between gap-4 px-4 pt-6 sm:px-6 lg:px-8">
       <div>
@@ -14,17 +16,11 @@ export function AppHeader({ name, email }: AppHeaderProps) {
           Internship Tracker
         </Link>
         <p className="mt-1 text-sm text-slate-500">
-          Signed in as {name} <span className="font-mono">({email})</span>
+          Welcome back, {firstName}. <span className="font-mono">{email}</span>
         </p>
       </div>
-      <div className="flex items-center gap-3">
-        <Link
-          href="/applications/new"
-          className="rounded-full bg-[color:var(--foreground)] px-4 py-2 text-sm font-medium !text-white transition-colors hover:bg-slate-800"
-        >
-          Add application
-        </Link>
-        <SignOutButton />
+      <div className="flex flex-wrap items-center justify-end gap-3">
+        <DashboardTour showTrigger={false} />
       </div>
     </header>
   );

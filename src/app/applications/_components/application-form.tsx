@@ -139,7 +139,7 @@ export function ApplicationForm({
           name="location"
           defaultValue={values.location}
           required
-          placeholder="San Francisco, CA"
+          placeholder="Remote, San Diego, CA, Hybrid..."
         />
         <label className="grid gap-2">
           <span className="text-sm font-medium text-slate-700">Status</span>
@@ -186,13 +186,13 @@ export function ApplicationForm({
           label="Resume Version"
           name="resumeVersion"
           defaultValue={values.resumeVersion}
-          placeholder="Resume v5 - backend emphasis"
+          placeholder="Resume v5 - backend focus"
         />
         <Field
           label="Tags"
           name="tags"
           defaultValue={values.tags}
-          placeholder="frontend, fintech, backend"
+          placeholder="frontend, fintech, referral"
         />
       </section>
 
@@ -209,7 +209,7 @@ export function ApplicationForm({
           name="notes"
           defaultValue={values.notes}
           rows={6}
-          placeholder="Write interview prep notes, recruiter context, follow-up reminders, or why the role matters to you."
+          placeholder="Add interview prep notes, recruiter context, follow-up reminders, or anything you want to remember later."
           className="rounded-3xl border border-slate-200 bg-white px-4 py-3 text-sm leading-6 text-slate-800 outline-none transition focus:border-slate-400"
         />
       </label>
@@ -247,7 +247,7 @@ function OptionalContactFields({
           onChange={(event) => setShowContactFields(event.target.checked)}
           className="h-4 w-4 rounded border-slate-300 text-slate-950"
         />
-        <span className="font-medium">Add recruiter or referral contact</span>
+        <span className="font-medium">Include a recruiter or referral contact</span>
       </label>
 
       {showContactFields ? (

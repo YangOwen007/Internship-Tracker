@@ -1,7 +1,8 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { signIn } from "next-auth/react";
 import { useFormStatus } from "react-dom";
 import {
   SignupFormState,
@@ -24,15 +25,51 @@ function SubmitButton() {
 
 export function SignupForm({ initialState }: { initialState: SignupFormState }) {
   const [state, formAction] = useActionState(signup, initialState);
+  const [name, setName] = useState(initialState.values.name);
+  const [email, setEmail] = useState(initialState.values.email);
+  const [password, setPassword] = useState("");
+  const [autoLoginError, setAutoLoginError] = useState<string | null>(null);
+  const hasAttemptedAutoLogin = useRef(false);
+
+  useEffect(() => {
+    if (!state.createdEmail || hasAttemptedAutoLogin.current) {
+      return;
+    }
+
+    hasAttemptedAutoLogin.current = true;
+    setAutoLoginError(null);
+
+    async function signInNewUser() {
+      // We reuse the credentials flow here so account creation and sign-in
+      // follow the exact same session rules and callbacks.
+      const result = await signIn("credentials", {
+        email: state.createdEmail,
+        password,
+        callbackUrl: "/",
+        redirect: false,
+      });
+
+      if (!result || result.error) {
+        setAutoLoginError(
+          "Your account was created, but we could not sign you in automatically. Please sign in manually.",
+        );
+        return;
+      }
+
+      window.location.assign(result.url ?? "/");
+    }
+
+    void signInNewUser();
+  }, [password, state.createdEmail]);
 
   return (
     <form action={formAction} className="grid gap-5">
-      {state.error ? (
+      {state.error || autoLoginError ? (
         <div
           className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700"
           role="alert"
         >
-          {state.error}
+          {state.error ?? autoLoginError}
         </div>
       ) : null}
 
@@ -42,7 +79,12 @@ export function SignupForm({ initialState }: { initialState: SignupFormState }) 
           name="name"
           type="text"
           required
-          defaultValue={state.values.name}
+          value={name}
+          onChange={(event) => {
+            hasAttemptedAutoLogin.current = false;
+            setAutoLoginError(null);
+            setName(event.target.value);
+          }}
           autoComplete="name"
           className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-800 outline-none transition focus:border-slate-400"
           placeholder="Owen Yang"
@@ -55,7 +97,12 @@ export function SignupForm({ initialState }: { initialState: SignupFormState }) 
           name="email"
           type="email"
           required
-          defaultValue={state.values.email}
+          value={email}
+          onChange={(event) => {
+            hasAttemptedAutoLogin.current = false;
+            setAutoLoginError(null);
+            setEmail(event.target.value);
+          }}
           autoComplete="email"
           className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-800 outline-none transition focus:border-slate-400"
           placeholder="owen@example.com"
@@ -69,6 +116,12 @@ export function SignupForm({ initialState }: { initialState: SignupFormState }) 
           type="password"
           required
           minLength={8}
+          value={password}
+          onChange={(event) => {
+            hasAttemptedAutoLogin.current = false;
+            setAutoLoginError(null);
+            setPassword(event.target.value);
+          }}
           autoComplete="new-password"
           className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-800 outline-none transition focus:border-slate-400"
           placeholder="At least 8 characters"

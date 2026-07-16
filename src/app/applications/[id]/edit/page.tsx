@@ -85,13 +85,13 @@ export default async function EditApplicationPage({
       <section className="mx-auto w-full max-w-4xl px-4 sm:px-6 lg:px-8">
         <div className="panel rounded-[2rem] p-6 sm:p-8">
           <div className="space-y-3">
-            <p className="eyebrow text-xs">Application editing</p>
+            <p className="eyebrow text-xs">Edit application</p>
             <h1 className="text-3xl font-semibold tracking-[-0.04em] text-slate-950 sm:text-4xl">
               Edit {application.company}
             </h1>
             <p className="max-w-2xl text-sm leading-6 text-slate-600 sm:text-base">
-              Update recruiting status, notes, deadlines, or contact info here without
-              re-entering the rest of the record.
+              Update the latest stage, refine your notes, or add fresh follow-up details
+              without rebuilding the whole record.
             </p>
           </div>
 

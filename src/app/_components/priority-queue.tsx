@@ -18,20 +18,20 @@ export function PriorityQueue({
     <article className="panel rounded-[1.5rem] p-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <p className="eyebrow text-xs">Action queue</p>
+          <p className="eyebrow text-xs">Next actions</p>
           <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-slate-950">
-            What needs attention next
+            Focus on what matters today
           </h2>
         </div>
         <span className="rounded-full bg-white px-3 py-1 font-mono text-xs text-slate-600">
-          top 5 priorities by date
+          top 5 by urgency
         </span>
       </div>
 
       <div className="mt-6 grid gap-3">
         {applications.length === 0 ? (
           <div className="rounded-[1.5rem] border border-dashed border-slate-200 bg-white/70 px-4 py-8 text-center text-sm text-slate-500">
-            No active applications need follow-up right now.
+            You&apos;re caught up for now. New deadlines and active interview stages will show up here automatically.
           </div>
         ) : (
           applications.map((application) => (

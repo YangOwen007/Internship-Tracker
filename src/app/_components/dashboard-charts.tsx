@@ -57,10 +57,13 @@ export function DashboardCharts({
 }: DashboardChartsProps) {
   return (
     <>
-      <article className="panel rounded-[1.5rem] p-5">
+      <article
+        className="panel rounded-[1.5rem] p-5"
+        data-tour-id="analytics-overview"
+      >
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <p className="eyebrow text-xs">Analytics preview</p>
+            <p className="eyebrow text-xs">Application trends</p>
             <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-slate-950">
               Applications over time
             </h2>
@@ -133,13 +136,13 @@ export function DashboardCharts({
       <article className="panel rounded-[1.5rem] p-5">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <p className="eyebrow text-xs">Breakdown view</p>
+            <p className="eyebrow text-xs">Pipeline breakdown</p>
             <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-slate-950">
               Statuses and top locations
             </h2>
           </div>
           <p className="max-w-xs text-sm leading-6 text-slate-600">
-            This turns the dashboard into something recruiters and engineers both recognize as a real analytics surface.
+            Spot where your applications are concentrated so you can balance roles, locations, and momentum.
           </p>
         </div>
 

@@ -5,6 +5,7 @@ import { SignupFormState } from "@/app/signup/actions";
 export function createEmptySignupState(): SignupFormState {
   return {
     error: null,
+    createdEmail: null,
     values: {
       name: "",
       email: "",
