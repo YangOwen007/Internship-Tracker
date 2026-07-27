@@ -9,6 +9,7 @@ export function createEmptySignupState(): SignupFormState {
     values: {
       name: "",
       email: "",
+      confirmPassword: "",
     },
   };
 }

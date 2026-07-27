@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { DashboardTour } from "@/app/_components/dashboard-tour";
 
 type AppHeaderProps = {
   name: string;
@@ -19,9 +18,7 @@ export function AppHeader({ name, email }: AppHeaderProps) {
           Welcome back, {firstName}. <span className="font-mono">{email}</span>
         </p>
       </div>
-      <div className="flex flex-wrap items-center justify-end gap-3">
-        <DashboardTour showTrigger={false} />
-      </div>
+      <div />
     </header>
   );
 }

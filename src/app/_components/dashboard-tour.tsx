@@ -15,7 +15,6 @@ type ViewportSize = {
   width: number;
 };
 
-const TOUR_PREFERENCE_KEY = "internship-tracker:tour-preference:v1";
 const TOUR_START_EVENT = "internship-tracker:start-tour";
 const POPUP_WIDTH = 360;
 const POPUP_HEIGHT = 252;
@@ -181,11 +180,16 @@ function CloseIcon() {
   );
 }
 
-export function DashboardTour({ showTrigger = true }: { showTrigger?: boolean }) {
+export function DashboardTour({
+  initialTutorialState,
+  showTrigger = true,
+}: {
+  initialTutorialState: "PENDING" | "SKIPPED" | "COMPLETED";
+  showTrigger?: boolean;
+}) {
+  const [tutorialState, setTutorialState] = useState(initialTutorialState);
   const [isPromptOpen, setIsPromptOpen] = useState(
-    () =>
-      typeof window !== "undefined" &&
-      !window.localStorage.getItem(TOUR_PREFERENCE_KEY),
+    initialTutorialState === "PENDING",
   );
   const [isTourActive, setIsTourActive] = useState(false);
   const [activeStepIndex, setActiveStepIndex] = useState(0);
@@ -316,7 +320,13 @@ export function DashboardTour({ showTrigger = true }: { showTrigger?: boolean })
 
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
-        closeTour();
+        setIsTourActive(false);
+        setTargetRect(null);
+
+        if (tutorialState === "PENDING") {
+          void persistTutorialState("SKIPPED");
+        }
+
         return;
       }
 
@@ -336,7 +346,7 @@ export function DashboardTour({ showTrigger = true }: { showTrigger?: boolean })
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
     };
-  }, [isTourActive]);
+  }, [isTourActive, tutorialState]);
 
   useEffect(() => {
     const handleStartTour = () => {
@@ -348,28 +358,47 @@ export function DashboardTour({ showTrigger = true }: { showTrigger?: boolean })
     return () => {
       window.removeEventListener(TOUR_START_EVENT, handleStartTour);
     };
-  });
+  }, []);
+
+  async function persistTutorialState(nextState: "SKIPPED" | "COMPLETED") {
+    setTutorialState(nextState);
+
+    await fetch("/api/tutorial-state", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        state: nextState,
+      }),
+    }).catch(() => undefined);
+  }
 
   function startTour() {
-    window.localStorage.setItem(TOUR_PREFERENCE_KEY, "enabled");
     setIsPromptOpen(false);
     setActiveStepIndex(0);
     setIsTourActive(true);
   }
 
   function dismissPrompt() {
-    window.localStorage.setItem(TOUR_PREFERENCE_KEY, "dismissed");
     setIsPromptOpen(false);
+    if (tutorialState === "PENDING") {
+      void persistTutorialState("SKIPPED");
+    }
   }
 
-  function closeTour() {
+  function closeTour(nextState?: "SKIPPED" | "COMPLETED") {
     setIsTourActive(false);
     setTargetRect(null);
+
+    if (nextState && tutorialState === "PENDING") {
+      void persistTutorialState(nextState);
+    }
   }
 
   function goToNextStep() {
     if (activeStepIndex === steps.length - 1) {
-      closeTour();
+      closeTour("COMPLETED");
       return;
     }
 
@@ -523,7 +552,7 @@ export function DashboardTour({ showTrigger = true }: { showTrigger?: boolean })
             <div className="relative">
               <button
                 type="button"
-                onClick={closeTour}
+                onClick={() => closeTour("SKIPPED")}
                 aria-label="Close tutorial"
                 className="absolute right-0 top-0 inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 transition-colors hover:border-slate-300 hover:text-slate-700"
               >

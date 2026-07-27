@@ -54,7 +54,7 @@ export function LoginForm({ callbackUrl }: LoginFormProps) {
           required
           autoComplete="email"
           className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-800 outline-none transition focus:border-slate-400"
-          placeholder="owen@example.com"
+          placeholder="johndoe@example.com"
         />
       </label>
 
@@ -78,6 +78,12 @@ export function LoginForm({ callbackUrl }: LoginFormProps) {
       >
         {isPending ? "Signing in..." : "Sign in"}
       </button>
+
+      <p className="text-sm text-slate-500">
+        <Link href="/forgot-password" className="font-medium text-slate-700 underline decoration-slate-300 underline-offset-4">
+          Forgot password?
+        </Link>
+      </p>
 
       <p className="text-sm text-slate-500">
         New here?{" "}

@@ -14,6 +14,8 @@ This app now uses PostgreSQL locally and is intended to deploy with the same dat
    - `DATABASE_URL`
    - `NEXTAUTH_SECRET`
    - `NEXTAUTH_URL`
+   - `RESEND_API_KEY` if you want real password-reset emails
+   - `RESEND_FROM_EMAIL` if you want real password-reset emails
 
 ## Example Production Env
 
@@ -21,17 +23,21 @@ This app now uses PostgreSQL locally and is intended to deploy with the same dat
 DATABASE_URL="postgresql://username:password@host:5432/internship_tracker?schema=public"
 NEXTAUTH_SECRET="replace-this-with-a-long-random-string"
 NEXTAUTH_URL="https://your-domain.example"
+RESEND_API_KEY="re_xxxxxxxxxxxxxxxxxxxxx"
+RESEND_FROM_EMAIL="Internship Tracker <noreply@your-domain.example>"
 ```
 
 ## Before Deploying
 
 1. Apply Prisma migrations to the target PostgreSQL database.
 2. Seed a test environment.
-3. Run `pnpm lint`, `pnpm typecheck`, and `pnpm build`.
-4. Verify auth and dashboard flows against the deployed database.
+3. Run `pnpm lint`, `pnpm typecheck`, `pnpm test`, and `pnpm build`.
+4. Verify sign-up, sign-in, forgot-password, reset-password, and dashboard flows against the deployed database.
 
 ## Useful Production Checks
 
 - `/api/health` should return a healthy status payload.
 - Login, signup, board view, table view, and charts should all load on a fresh session.
 - Drag-and-drop board movement should still persist status changes.
+- If email is configured, forgot-password should send a real reset email.
+- If email is not configured, local development should still show the on-page preview reset link.

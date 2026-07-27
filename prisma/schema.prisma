@@ -18,15 +18,23 @@ enum ApplicationStatus {
   ARCHIVED
 }
 
+enum TutorialState {
+  PENDING
+  SKIPPED
+  COMPLETED
+}
+
 model User {
-  id           String        @id @default(cuid())
-  email        String        @unique
-  name         String?
-  passwordHash String?
-  applications Application[]
-  tags         Tag[]
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
+  id                  String               @id @default(cuid())
+  email               String               @unique
+  name                String?
+  passwordHash        String?
+  tutorialState       TutorialState        @default(PENDING)
+  applications        Application[]
+  tags                Tag[]
+  passwordResetTokens PasswordResetToken[]
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
 }
 
 model Application {
@@ -80,4 +88,17 @@ model ApplicationTag {
   tag           Tag         @relation(fields: [tagId], references: [id], onDelete: Cascade)
 
   @@id([applicationId, tagId])
+}
+
+model PasswordResetToken {
+  id        String   @id @default(cuid())
+  userId    String
+  tokenHash String   @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
 }

@@ -15,6 +15,7 @@ export type SignupFormState = {
   values: {
     name: string;
     email: string;
+    confirmPassword: string;
   };
 };
 
@@ -25,6 +26,10 @@ const signupSchema = z.object({
     .string()
     .min(8, "Password must be at least 8 characters long.")
     .max(72, "Password must be 72 characters or fewer."),
+  confirmPassword: z.string(),
+}).refine((values) => values.password === values.confirmPassword, {
+  message: "Passwords must match.",
+  path: ["confirmPassword"],
 });
 
 export async function signup(
@@ -35,6 +40,7 @@ export async function signup(
     name: String(formData.get("name") ?? "").trim(),
     email: String(formData.get("email") ?? "").trim().toLowerCase(),
     password: String(formData.get("password") ?? ""),
+    confirmPassword: String(formData.get("confirmPassword") ?? ""),
   };
 
   // Validation stays close to the action so the rules are easy to find when
@@ -48,6 +54,7 @@ export async function signup(
       values: {
         name: rawValues.name,
         email: rawValues.email,
+        confirmPassword: rawValues.confirmPassword,
       },
     };
   }
@@ -69,6 +76,7 @@ export async function signup(
       values: {
         name: rawValues.name,
         email: rawValues.email,
+        confirmPassword: rawValues.confirmPassword,
       },
     };
   }
@@ -86,6 +94,7 @@ export async function signup(
       values: {
         name: rawValues.name,
         email: rawValues.email,
+        confirmPassword: rawValues.confirmPassword,
       },
     };
   }
@@ -97,6 +106,7 @@ export async function signup(
       name: parsedValues.data.name,
       email: parsedValues.data.email,
       passwordHash,
+      tutorialState: "PENDING",
     },
   });
 
@@ -106,6 +116,7 @@ export async function signup(
     values: {
       name: "",
       email: "",
+      confirmPassword: "",
     },
   };
 }

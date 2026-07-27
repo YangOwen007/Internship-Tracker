@@ -8,6 +8,7 @@ type LoginPageProps = {
   searchParams: Promise<{
     callbackUrl?: string;
     registered?: string;
+    reset?: string;
   }>;
 };
 
@@ -21,6 +22,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
   const params = await searchParams;
   const callbackUrl = sanitizeCallbackPath(params.callbackUrl);
   const showRegisteredMessage = params.registered === "1";
+  const showResetMessage = params.reset === "1";
 
   return (
     <main className="mx-auto flex min-h-full w-full max-w-5xl flex-1 items-center px-4 py-10 sm:px-6 lg:px-8">
@@ -58,6 +60,14 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
               role="status"
             >
               Account created. You can sign in now.
+            </div>
+          ) : null}
+          {showResetMessage ? (
+            <div
+              className="mt-6 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700"
+              role="status"
+            >
+              Password updated. Sign in with your new password.
             </div>
           ) : null}
           <div className="mt-6">

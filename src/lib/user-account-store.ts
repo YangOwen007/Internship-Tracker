@@ -36,3 +36,17 @@ export async function setUserPasswordHash(
     },
   });
 }
+
+export async function updateUserTutorialState(
+  userId: string,
+  tutorialState: "PENDING" | "SKIPPED" | "COMPLETED",
+) {
+  await prisma.user.update({
+    where: {
+      id: userId,
+    },
+    data: {
+      tutorialState,
+    },
+  });
+}

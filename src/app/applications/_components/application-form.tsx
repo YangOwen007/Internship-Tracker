@@ -125,14 +125,14 @@ export function ApplicationForm({
           name="company"
           defaultValue={values.company}
           required
-          placeholder="Figma"
+          placeholder="Example Company"
         />
         <Field
           label="Role"
           name="role"
           defaultValue={values.role}
           required
-          placeholder="Software Engineer Intern"
+          placeholder="Engineering Intern"
         />
         <Field
           label="Location"
@@ -180,13 +180,13 @@ export function ApplicationForm({
           label="Salary"
           name="salary"
           defaultValue={values.salary}
-          placeholder="$55/hr"
+          placeholder="$00/hr"
         />
         <Field
           label="Resume Version"
           name="resumeVersion"
           defaultValue={values.resumeVersion}
-          placeholder="Resume v5 - backend focus"
+          placeholder="Resume v1 - tailored draft"
         />
         <Field
           label="Tags"
@@ -256,19 +256,19 @@ function OptionalContactFields({
             label="Contact Name"
             name="contactName"
             defaultValue={values.contactName}
-            placeholder="Jordan Patel"
+            placeholder="Recruiter name"
           />
           <Field
             label="Contact Title"
             name="contactTitle"
             defaultValue={values.contactTitle}
-            placeholder="Campus Recruiter"
+            placeholder="Recruiter title"
           />
           <Field
             label="Contact Channel"
             name="contactChannel"
             defaultValue={values.contactChannel}
-            placeholder="Referral, LinkedIn, Email"
+            placeholder="Email, referral, or LinkedIn"
           />
         </div>
       ) : null}

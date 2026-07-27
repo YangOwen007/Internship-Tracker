@@ -9,13 +9,13 @@ import {
   signup,
 } from "@/app/signup/actions";
 
-function SubmitButton() {
+function SubmitButton({ disabled }: { disabled?: boolean }) {
   const { pending } = useFormStatus();
 
   return (
     <button
       type="submit"
-      disabled={pending}
+      disabled={pending || disabled}
       className="rounded-full bg-slate-950 px-5 py-3 text-sm font-medium text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
     >
       {pending ? "Creating account..." : "Create account"}
@@ -28,8 +28,11 @@ export function SignupForm({ initialState }: { initialState: SignupFormState }) 
   const [name, setName] = useState(initialState.values.name);
   const [email, setEmail] = useState(initialState.values.email);
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState(initialState.values.confirmPassword);
   const [autoLoginError, setAutoLoginError] = useState<string | null>(null);
   const hasAttemptedAutoLogin = useRef(false);
+  const passwordsMismatch =
+    confirmPassword.length > 0 && password !== confirmPassword;
 
   useEffect(() => {
     if (!state.createdEmail || hasAttemptedAutoLogin.current) {
@@ -87,7 +90,7 @@ export function SignupForm({ initialState }: { initialState: SignupFormState }) 
           }}
           autoComplete="name"
           className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-800 outline-none transition focus:border-slate-400"
-          placeholder="Owen Yang"
+          placeholder="John Doe"
         />
       </label>
 
@@ -105,7 +108,7 @@ export function SignupForm({ initialState }: { initialState: SignupFormState }) 
           }}
           autoComplete="email"
           className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-800 outline-none transition focus:border-slate-400"
-          placeholder="owen@example.com"
+          placeholder="johndoe@example.com"
         />
       </label>
 
@@ -128,7 +131,32 @@ export function SignupForm({ initialState }: { initialState: SignupFormState }) 
         />
       </label>
 
-      <SubmitButton />
+      <label className="grid gap-2">
+        <span className="text-sm font-medium text-slate-700">Confirm Password</span>
+        <input
+          name="confirmPassword"
+          type="password"
+          required
+          minLength={8}
+          value={confirmPassword}
+          onChange={(event) => {
+            hasAttemptedAutoLogin.current = false;
+            setAutoLoginError(null);
+            setConfirmPassword(event.target.value);
+          }}
+          autoComplete="new-password"
+          className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-800 outline-none transition focus:border-slate-400"
+          placeholder="Re-enter your password"
+        />
+      </label>
+
+      {passwordsMismatch ? (
+        <p className="text-sm text-rose-700" role="alert">
+          Passwords must match before you can create your account.
+        </p>
+      ) : null}
+
+      <SubmitButton disabled={passwordsMismatch} />
 
       <p className="text-sm text-slate-500">
         Already have an account?{" "}

@@ -24,6 +24,8 @@ The project is intentionally positioned as a portfolio piece that shows product 
 ## Current Features
 
 - Email/password authentication
+- Confirm-password validation during sign-up
+- Forgot-password and password-reset flow
 - User-specific application data
 - Dashboard metrics and charts
 - Priority queue for upcoming deadlines and follow-up work
@@ -31,6 +33,7 @@ The project is intentionally positioned as a portfolio piece that shows product 
 - Table view with search, filters, and sorting
 - Create and edit application flows
 - Contacts, notes, tags, deadlines, salary, job link, and resume version tracking
+- First-login tutorial with replay support
 - Health endpoint at `/api/health`
 - GitHub Actions CI
 
@@ -79,6 +82,7 @@ pnpm db:postgres:down
 pnpm db:postgres:logs
 pnpm lint
 pnpm typecheck
+pnpm test
 pnpm build
 ```
 
@@ -95,6 +99,11 @@ pnpm build
 - [docs/postgres-migration-plan.md](C:/Users/centu/Documents/Internship%20Tracker/docs/postgres-migration-plan.md)
 - [docs/deployment-guide.md](C:/Users/centu/Documents/Internship%20Tracker/docs/deployment-guide.md)
 
+## Password Reset Email Behavior
+
+- In local development, forgot-password shows a browser preview link if no email provider is configured.
+- In production, set `RESEND_API_KEY` and `RESEND_FROM_EMAIL` to send real password-reset emails.
+
 ## CI
 
 The repo includes [`.github/workflows/ci.yml`](C:/Users/centu/Documents/Internship%20Tracker/.github/workflows/ci.yml), which:
@@ -105,6 +114,7 @@ The repo includes [`.github/workflows/ci.yml`](C:/Users/centu/Documents/Internsh
 - seeds demo data
 - runs lint
 - runs typecheck
+- runs tests
 - runs a production build
 
 ## Screenshot Plan
