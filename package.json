@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test": "node --import tsx --test test/security-and-application-helpers.test.ts",
+    "test": "node --import tsx --test \"test/**/*.test.ts\"",
     "typecheck": "tsc --noEmit",
     "db:generate": "prisma generate",
     "db:migrate:dev": "prisma migrate dev",
@@ -20,11 +20,9 @@
     "db:postgres:logs": "docker compose -f docker-compose.postgres.yml logs -f postgres"
   },
   "dependencies": {
-    "@prisma/adapter-better-sqlite3": "^7.8.0",
     "@prisma/adapter-pg": "^7.8.0",
     "@prisma/client": "^7.8.0",
     "bcryptjs": "^3.0.3",
-    "better-sqlite3": "^12.11.1",
     "next": "16.2.10",
     "next-auth": "^4.24.14",
     "postgres": "^3.4.9",
@@ -35,7 +33,6 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
-    "@types/better-sqlite3": "^7.6.13",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",

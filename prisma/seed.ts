@@ -165,7 +165,16 @@ const applications = [
 function assertSafeSeedTarget(url: string) {
   // The seed script deletes existing rows before recreating demo data, so we
   // refuse to run against non-local databases unless the caller opts in.
-  if (process.env.ALLOW_DESTRUCTIVE_SEED === "true") {
+  const destructiveSeedApproved =
+    process.env.ALLOW_DESTRUCTIVE_SEED === "true";
+
+  if (process.env.NODE_ENV === "production" && !destructiveSeedApproved) {
+    throw new Error(
+      "Refusing to seed while NODE_ENV=production. Set ALLOW_DESTRUCTIVE_SEED=true only for an intentional destructive reset.",
+    );
+  }
+
+  if (destructiveSeedApproved) {
     return;
   }
 
@@ -257,7 +266,7 @@ async function main() {
   }
 
   console.log(
-    `Seeded ${applications.length} internship applications for ${user.email}. Demo password for this run: ${demoUser.password}`,
+    `Seeded ${applications.length} internship applications for ${user.email}.`,
   );
 }
 

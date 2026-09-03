@@ -7,6 +7,8 @@ import {
   type ApplicationRecord,
 } from "@/lib/applications";
 import {
+  getClientIpFromHeaders,
+  isPublicSignupEnabled,
   isSafeHttpUrl,
   sanitizeCallbackPath,
 } from "@/lib/security";
@@ -56,6 +58,30 @@ test("isSafeHttpUrl rejects dangerous schemes", () => {
   assert.equal(isSafeHttpUrl("http://example.com/jobs"), true);
   assert.equal(isSafeHttpUrl("javascript:alert(1)"), false);
   assert.equal(isSafeHttpUrl("data:text/html,<script>alert(1)</script>"), false);
+});
+
+test("client IP lookup ignores an untrusted x-forwarded-for header", () => {
+  assert.equal(
+    getClientIpFromHeaders({ "x-forwarded-for": "203.0.113.10" }),
+    "unknown",
+  );
+});
+
+test("public signup is disabled by default in production", () => {
+  assert.equal(
+    isPublicSignupEnabled({
+      nodeEnv: "production",
+      publicSignupEnabled: undefined,
+    }),
+    false,
+  );
+  assert.equal(
+    isPublicSignupEnabled({
+      nodeEnv: "production",
+      publicSignupEnabled: "true",
+    }),
+    true,
+  );
 });
 
 test("sortApplications orders deadlines with nulls last", () => {

@@ -1,13 +1,13 @@
 # Internship Tracker
 
-A full-stack internship and job application tracker built to feel closer to a lightweight recruiting CRM than a class CRUD app.
+A full-stack internship and job application tracker for organizing a student recruiting search.
 
 ## Overview
 
 This project helps students manage the recruiting process end to end:
 
 - track applications across recruiting stages
-- manage notes, deadlines, contacts, tags, and resume versions
+- manage a notes field, deadlines, one contact per application, tags, and resume-version labels
 - review progress through both a board view and a table view
 - see analytics and a priority queue instead of just storing records
 
@@ -32,9 +32,9 @@ The project is intentionally positioned as a portfolio piece that shows product 
 - Board view with drag-and-drop stage movement
 - Table view with search, filters, and sorting
 - Create and edit application flows
-- Contacts, notes, tags, deadlines, salary, job link, and resume version tracking
+- One contact per application, notes, tags, deadlines, salary, job links, and resume-version labels
 - First-login tutorial with replay support
-- Health endpoint at `/api/health`
+- Database-backed readiness endpoint at `/api/health`
 - GitHub Actions CI
 
 ## Tech Stack
@@ -53,9 +53,9 @@ The project is intentionally positioned as a portfolio piece that shows product 
 
 The app now runs on a PostgreSQL-first workflow locally and in deployment-oriented environments:
 
-- connection config lives in [prisma.config.ts](C:/Users/centu/Documents/Internship%20Tracker/prisma.config.ts)
-- the shared Prisma client uses the generated PostgreSQL client in [src/lib/prisma.ts](C:/Users/centu/Documents/Internship%20Tracker/src/lib/prisma.ts)
-- schema setup is reproducible through [prisma/migrations](C:/Users/centu/Documents/Internship%20Tracker/prisma/migrations)
+- connection config lives in [`prisma.config.ts`](prisma.config.ts)
+- the shared Prisma client uses the generated PostgreSQL client in [`src/lib/prisma.ts`](src/lib/prisma.ts)
+- schema setup is reproducible through [`prisma/migrations`](prisma/migrations)
 
 ## Local Development
 
@@ -64,7 +64,7 @@ Run:
 ```bash
 pnpm db:postgres:up
 cp .env.example .env
-pnpm db:setup
+pnpm db:setup # destructive demo seed; local and CI databases only
 pnpm dev
 ```
 
@@ -88,16 +88,16 @@ pnpm build
 
 ## Demo Account
 
-- The seed script creates `owen.yang.demo@internship-tracker.local`.
-- The demo password is printed when `pnpm db:seed` or `pnpm db:setup` runs.
-- Set `SEED_DEMO_PASSWORD` in `.env` if you want a stable local demo password.
+- The seed script creates `owen.yang.demo@internship-tracker.local` on a local or explicitly approved test database.
+- Set `SEED_DEMO_PASSWORD` in `.env` before seeding if you need a known local password. Passwords are never printed.
+- `pnpm db:setup` deletes existing rows and is only for disposable local or CI databases. The seed refuses production and non-local targets unless `ALLOW_DESTRUCTIVE_SEED=true` is explicitly set.
 
 ## Deployment And PostgreSQL Prep
 
-- [docker-compose.postgres.yml](C:/Users/centu/Documents/Internship%20Tracker/docker-compose.postgres.yml)
-- [.env.example](C:/Users/centu/Documents/Internship%20Tracker/.env.example)
-- [docs/postgres-migration-plan.md](C:/Users/centu/Documents/Internship%20Tracker/docs/postgres-migration-plan.md)
-- [docs/deployment-guide.md](C:/Users/centu/Documents/Internship%20Tracker/docs/deployment-guide.md)
+- [`docker-compose.postgres.yml`](docker-compose.postgres.yml)
+- [`.env.example`](.env.example)
+- [`docs/postgres-migration-plan.md`](docs/postgres-migration-plan.md)
+- [`docs/deployment-guide.md`](docs/deployment-guide.md)
 
 ## Password Reset Email Behavior
 
@@ -106,7 +106,7 @@ pnpm build
 
 ## CI
 
-The repo includes [`.github/workflows/ci.yml`](C:/Users/centu/Documents/Internship%20Tracker/.github/workflows/ci.yml), which:
+The repo includes [`.github/workflows/ci.yml`](.github/workflows/ci.yml), which:
 
 - installs dependencies
 - starts PostgreSQL
@@ -119,7 +119,7 @@ The repo includes [`.github/workflows/ci.yml`](C:/Users/centu/Documents/Internsh
 
 ## Screenshot Plan
 
-README screenshots have not been added yet. The planned capture list is in [docs/screenshot-shotlist.md](C:/Users/centu/Documents/Internship%20Tracker/docs/screenshot-shotlist.md).
+README screenshots have not been added yet. The planned capture list is in [`docs/screenshot-shotlist.md`](docs/screenshot-shotlist.md).
 
 ## What This Project Demonstrates
 

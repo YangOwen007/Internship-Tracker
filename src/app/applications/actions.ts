@@ -7,6 +7,7 @@ import {
   ApplicationStatus as PrismaApplicationStatus,
 } from "@/generated/prisma/client";
 import { requireCurrentUser } from "@/lib/auth-user";
+import { updateApplicationStatusForUser } from "@/lib/application-store";
 import { prisma } from "@/lib/prisma";
 import { isSafeHttpUrl } from "@/lib/security";
 
@@ -377,26 +378,15 @@ export async function updateApplicationStatus(
   const user = await requireCurrentUser();
   const status = validateStatusUpdate(String(formData.get("status") ?? ""));
 
-  const application = await prisma.application.findUnique({
-    where: {
-      id: applicationId,
-    },
+  const wasUpdated = await updateApplicationStatusForUser({
+    applicationId,
+    userId: user.id,
+    status,
   });
 
-  if (!application || application.userId !== user.id) {
+  if (!wasUpdated) {
     throw new Error("Application not found for the current user.");
   }
-
-  // This action updates only the recruiting stage so status changes can be fast
-  // from the dashboard without reopening the full edit form.
-  await prisma.application.update({
-    where: {
-      id: applicationId,
-    },
-    data: {
-      status,
-    },
-  });
 
   revalidatePath("/");
 }

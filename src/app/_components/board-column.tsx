@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { z } from "zod";
 import {
   ApplicationRecord,
   formatDate,
@@ -18,6 +19,28 @@ type BoardColumnProps = {
     nextStatus: ApplicationRecord["status"],
   ) => void;
 };
+
+const dragPayloadSchema = z.object({
+  applicationId: z.string().min(1).max(128),
+  fromStatus: z.enum([
+    "interested",
+    "applied",
+    "oa",
+    "interview",
+    "final_round",
+    "offer",
+    "rejected",
+    "archived",
+  ]),
+});
+
+function parseDragPayload(rawPayload: string) {
+  try {
+    return dragPayloadSchema.safeParse(JSON.parse(rawPayload));
+  } catch {
+    return { success: false } as const;
+  }
+}
 
 function DraggableCard({
   application,
@@ -126,16 +149,13 @@ export function BoardColumn({
           return;
         }
 
-        const payload = JSON.parse(rawPayload) as {
-          applicationId?: string;
-          fromStatus?: ApplicationRecord["status"];
-        };
+        const parsedPayload = parseDragPayload(rawPayload);
 
-        if (!payload.applicationId || payload.fromStatus === status) {
+        if (!parsedPayload.success || parsedPayload.data.fromStatus === status) {
           return;
         }
 
-        onMoveApplication(payload.applicationId, status);
+        onMoveApplication(parsedPayload.data.applicationId, status);
       }}
       className="app-column rounded-[1.5rem] border border-slate-200 bg-[linear-gradient(180deg,rgba(255,255,255,0.92),rgba(248,243,236,0.92))] p-4"
     >

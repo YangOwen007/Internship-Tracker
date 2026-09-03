@@ -12,16 +12,17 @@ This app now uses PostgreSQL locally and is intended to deploy with the same dat
 2. Use a managed PostgreSQL database.
 3. Set these env vars in production:
    - `DATABASE_URL`
-   - `NEXTAUTH_SECRET`
-   - `NEXTAUTH_URL`
-   - `RESEND_API_KEY` if you want real password-reset emails
-   - `RESEND_FROM_EMAIL` if you want real password-reset emails
+   - `NEXTAUTH_SECRET` generated from a cryptographically secure random value
+   - `NEXTAUTH_URL` set to the final HTTPS origin
+   - `RESEND_API_KEY` for password-reset delivery
+   - `RESEND_FROM_EMAIL` using a verified sender domain
+   - `PUBLIC_SIGNUP_ENABLED=true` only when public registration is intended and protected by a platform-level distributed rate limit
 
 ## Example Production Env
 
 ```bash
 DATABASE_URL="postgresql://username:password@host:5432/internship_tracker?schema=public"
-NEXTAUTH_SECRET="replace-this-with-a-long-random-string"
+NEXTAUTH_SECRET="generate-a-strong-random-secret"
 NEXTAUTH_URL="https://your-domain.example"
 RESEND_API_KEY="re_xxxxxxxxxxxxxxxxxxxxx"
 RESEND_FROM_EMAIL="Internship Tracker <noreply@your-domain.example>"
@@ -29,14 +30,16 @@ RESEND_FROM_EMAIL="Internship Tracker <noreply@your-domain.example>"
 
 ## Before Deploying
 
-1. Apply Prisma migrations to the target PostgreSQL database.
-2. Seed a test environment.
+1. Provision a managed PostgreSQL database with backups and copy its connection string into `DATABASE_URL`.
+2. Apply Prisma migrations to the target PostgreSQL database with `pnpm db:migrate:deploy`.
 3. Run `pnpm lint`, `pnpm typecheck`, `pnpm test`, and `pnpm build`.
 4. Verify sign-up, sign-in, forgot-password, reset-password, and dashboard flows against the deployed database.
 
+Never run `pnpm db:setup` against production. It includes a destructive demo seed and is reserved for disposable local and CI databases.
+
 ## Useful Production Checks
 
-- `/api/health` should return a healthy status payload.
+- `/api/health` should return HTTP 200 with `database: "reachable"`; it returns HTTP 503 when PostgreSQL is unavailable.
 - Login, signup, board view, table view, and charts should all load on a fresh session.
 - Drag-and-drop board movement should still persist status changes.
 - If email is configured, forgot-password should send a real reset email.

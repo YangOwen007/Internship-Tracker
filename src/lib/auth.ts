@@ -53,8 +53,8 @@ export const authOptions: NextAuthOptions = {
           },
         );
 
-        // A small server-side throttle reduces the value of brute-force login
-        // attempts even before a dedicated shared rate-limiter exists.
+        // This process-local throttle is defense in depth. A shared platform
+        // limiter remains necessary before operating at serverless scale.
         if (!loginRateLimit.allowed) {
           return null;
         }
