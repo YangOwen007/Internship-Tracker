@@ -282,11 +282,11 @@ export async function createApplication(
         role: values.role,
         location: values.location,
         status,
-        appliedAt: new Date(`${values.appliedAt}T00:00:00`),
+        appliedAt: new Date(`${values.appliedAt}T00:00:00Z`),
         salary: values.salary || null,
         jobLink: values.jobLink,
         nextDeadline: values.nextDeadline
-          ? new Date(`${values.nextDeadline}T00:00:00`)
+          ? new Date(`${values.nextDeadline}T00:00:00Z`)
           : null,
         notes: values.notes,
         resumeVersion: values.resumeVersion || null,
@@ -341,17 +341,18 @@ export async function updateApplication(
     await transactionClient.application.update({
       where: {
         id: applicationId,
+        userId: user.id,
       },
       data: {
         company: values.company,
         role: values.role,
         location: values.location,
         status,
-        appliedAt: new Date(`${values.appliedAt}T00:00:00`),
+        appliedAt: new Date(`${values.appliedAt}T00:00:00Z`),
         salary: values.salary || null,
         jobLink: values.jobLink,
         nextDeadline: values.nextDeadline
-          ? new Date(`${values.nextDeadline}T00:00:00`)
+          ? new Date(`${values.nextDeadline}T00:00:00Z`)
           : null,
         notes: values.notes,
         resumeVersion: values.resumeVersion || null,

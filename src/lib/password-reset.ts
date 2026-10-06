@@ -58,59 +58,24 @@ export async function resetPasswordWithToken(options: {
     return null;
   }
 
-  await prisma.$transaction([
-    prisma.passwordResetToken.update({
-      where: {
-        id: tokenRecord.id,
-      },
-      data: {
-        usedAt: now,
-      },
-    }),
-    prisma.user.update({
+  return prisma.$transaction(async (transaction) => {
+    // Claim the token with a conditional write so two concurrent requests
+    // cannot both change the password using the same reset link.
+    const claimed = await transaction.passwordResetToken.updateMany({
+      where: { id: tokenRecord.id, usedAt: null, expiresAt: { gt: now } },
+      data: { usedAt: now },
+    });
+    if (claimed.count !== 1) return null;
+
+    return transaction.user.update({
       where: {
         id: tokenRecord.user.id,
       },
       data: {
         passwordHash: options.passwordHash,
       },
-    }),
-  ]);
-
-  return tokenRecord.user;
-}
-
-export async function consumePasswordResetToken(rawToken: string) {
-  const tokenHash = hashPasswordResetToken(rawToken);
-  const now = new Date();
-
-  const tokenRecord = await prisma.passwordResetToken.findUnique({
-    where: {
-      tokenHash,
-    },
-    include: {
-      user: true,
-    },
+    });
   });
-
-  if (
-    !tokenRecord ||
-    tokenRecord.usedAt ||
-    tokenRecord.expiresAt <= now
-  ) {
-    return null;
-  }
-
-  await prisma.passwordResetToken.update({
-    where: {
-      id: tokenRecord.id,
-    },
-    data: {
-      usedAt: now,
-    },
-  });
-
-  return tokenRecord.user;
 }
 
 export async function isPasswordResetTokenValid(rawToken: string) {

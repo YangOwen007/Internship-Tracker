@@ -1,9 +1,12 @@
-import test from "node:test";
+import test, { after } from "node:test";
 import assert from "node:assert/strict";
 import { randomUUID } from "node:crypto";
 import { ApplicationStatus } from "@/generated/prisma/client";
 import { updateApplicationStatusForUser } from "@/lib/application-store";
 import { prisma } from "@/lib/prisma";
+import "./local-database-only";
+
+after(() => prisma.$disconnect());
 
 test("application status updates are scoped to the owning user", async () => {
   const testRunId = randomUUID();

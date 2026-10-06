@@ -5,7 +5,7 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "Internship Tracker",
   description:
-    "A polished internship application tracker with dashboard analytics, pipeline visibility, and student recruiting workflows.",
+    "Organize internship applications, deadlines, contacts, and recruiting progress.",
   robots: {
     index: false,
     follow: false,

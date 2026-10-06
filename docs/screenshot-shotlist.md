@@ -2,6 +2,8 @@
 
 Use this checklist when capturing README or portfolio screenshots.
 
+Captured on October 5, 2026: dashboard overview and login, from the local production build. Dashboard data belongs to a disposable synthetic test account. Board, table, and edit-form captures remain to be added.
+
 ## Core Screens
 
 1. Dashboard overview

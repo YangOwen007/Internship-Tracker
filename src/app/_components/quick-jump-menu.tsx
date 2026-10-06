@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { signOut } from "next-auth/react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 const TOUR_START_EVENT = "internship-tracker:start-tour";
 
@@ -51,6 +51,8 @@ function CloseIcon() {
 
 export function QuickJumpMenu() {
   const [isOpen, setIsOpen] = useState(false);
+  const menuRef = useRef<HTMLElement | null>(null);
+  const triggerRef = useRef<HTMLButtonElement | null>(null);
 
   useEffect(() => {
     if (!isOpen) {
@@ -61,12 +63,31 @@ export function QuickJumpMenu() {
       if (event.key === "Escape") {
         setIsOpen(false);
       }
+      if (event.key === "Tab") {
+        const controls = menuRef.current?.querySelectorAll<HTMLElement>('button, a[href]');
+        if (!controls?.length) return;
+        const first = controls[0];
+        const last = controls[controls.length - 1];
+        if (event.shiftKey && document.activeElement === first) {
+          event.preventDefault();
+          last.focus();
+        } else if (!event.shiftKey && document.activeElement === last) {
+          event.preventDefault();
+          first.focus();
+        }
+      }
     };
 
+    const previousOverflow = document.body.style.overflow;
+    const trigger = triggerRef.current;
+    document.body.style.overflow = "hidden";
+    menuRef.current?.querySelector<HTMLElement>('button')?.focus();
     window.addEventListener("keydown", handleKeyDown);
 
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
+      document.body.style.overflow = previousOverflow;
+      trigger?.focus();
     };
   }, [isOpen]);
 
@@ -92,8 +113,9 @@ export function QuickJumpMenu() {
   }
 
   return (
-    <div className="fixed left-4 top-24 z-40 hidden xl:block">
+    <div className="fixed right-4 top-4 z-40 xl:left-4 xl:right-auto xl:top-24">
       <button
+        ref={triggerRef}
         type="button"
         onClick={() => setIsOpen(true)}
         aria-label="Open actions menu"
@@ -106,6 +128,9 @@ export function QuickJumpMenu() {
 
       <button
         type="button"
+        tabIndex={-1}
+        inert={!isOpen}
+        aria-hidden={!isOpen}
         aria-label="Close actions menu"
         onClick={() => setIsOpen(false)}
         className={`fixed inset-0 transition-opacity duration-200 ${
@@ -116,9 +141,13 @@ export function QuickJumpMenu() {
       />
 
       <aside
+        ref={menuRef}
+        inert={!isOpen}
+        role="dialog"
+        aria-modal={isOpen}
         id="quick-actions-sidebar"
         aria-label="Quick actions"
-        className={`fixed left-4 top-24 flex w-72 flex-col rounded-[1.5rem] border border-[color:var(--border)] bg-[#fffaf4] p-4 shadow-[0_24px_60px_rgba(15,23,42,0.16)] transition-all duration-300 ease-out ${
+        className={`fixed left-4 top-24 flex max-h-[calc(100dvh-7rem)] w-72 max-w-[calc(100vw-2rem)] flex-col overflow-y-auto rounded-[1.5rem] border border-[color:var(--border)] bg-[#fffaf4] p-4 shadow-[0_24px_60px_rgba(15,23,42,0.16)] transition-all duration-300 ease-out ${
           isOpen
             ? "translate-x-0 opacity-100"
             : "-translate-x-[calc(100%+1rem)] pointer-events-none opacity-0"

@@ -11,9 +11,15 @@ export async function sendPasswordResetEmail(options: {
     process.env.RESEND_FROM_EMAIL?.trim() ??
     "Internship Tracker <noreply@internship-tracker.local>";
 
+  if (process.env.NODE_ENV === "production" &&
+      (!resendApiKey || !process.env.RESEND_FROM_EMAIL?.trim())) {
+    throw new Error("Password reset email delivery is not configured.");
+  }
+
   if (resendApiKey) {
     const response = await fetch("https://api.resend.com/emails", {
       method: "POST",
+      signal: AbortSignal.timeout(10_000),
       headers: {
         Authorization: `Bearer ${resendApiKey}`,
         "Content-Type": "application/json",
@@ -40,8 +46,6 @@ export async function sendPasswordResetEmail(options: {
   }
 
   if (process.env.NODE_ENV !== "production") {
-    console.log(`Password reset preview for ${options.to}: ${options.resetUrl}`);
-
     return {
       previewUrl: options.resetUrl,
     } satisfies EmailDeliveryResult;

@@ -1,131 +1,103 @@
 # Internship Tracker
 
-A full-stack internship and job application tracker for organizing a student recruiting search.
+A student application tracker for keeping companies, roles, deadlines, and recruiting progress in one place.
 
-## Overview
+## Current status
 
-This project helps students manage the recruiting process end to end:
+The app runs locally with Node.js 24 and PostgreSQL 16. There is no published demo URL. Deployment requires a hosting account, PostgreSQL, authentication secrets, and a verified email sender. See the [deployment guide](docs/deployment-guide.md).
 
-- track applications across recruiting stages
-- manage a notes field, deadlines, one contact per application, tags, and resume-version labels
-- review progress through both a board view and a table view
-- see analytics and a priority queue instead of just storing records
+The dashboard screenshot below comes from a local production build using a disposable test account and synthetic application. The [shot list](docs/screenshot-shotlist.md) covers additional screens. No open-source license has been selected.
 
-The project is intentionally positioned as a portfolio piece that shows product thinking, full-stack engineering, database design, authentication, and deployment readiness.
+![Dashboard with a synthetic application](docs/screenshots/dashboard.png)
 
-## Why This Project Is Strong
+[View the login screen](docs/screenshots/login.png).
 
-- It is a real product workflow, not just a form and a list.
-- It includes auth and user-scoped data.
-- It uses a relational schema with Prisma-backed queries.
-- It has both operational analytics and day-to-day application management views.
-- It includes CI, health checks, and deployment planning.
+## Functionality
 
-## Current Features
+- Credentials signup/login, password confirmation, and email password recovery.
+- Eight application statuses, board/table views, search, filters, sorting, and quick status changes.
+- One optional contact per application, a single notes string, tags, deadlines, salary text, job links, and a resume-version label. No resume files are uploaded.
+- Dashboard charts, analytics timeframes, a priority queue, and a replayable introductory tour.
+- User-scoped records and database readiness at `/api/health`.
 
-- Email/password authentication
-- Confirm-password validation during sign-up
-- Forgot-password and password-reset flow
-- User-specific application data
-- Dashboard metrics and charts
-- Priority queue for upcoming deadlines and follow-up work
-- Board view with drag-and-drop stage movement
-- Table view with search, filters, and sorting
-- Create and edit application flows
-- One contact per application, notes, tags, deadlines, salary, job links, and resume-version labels
-- First-login tutorial with replay support
-- Database-backed readiness endpoint at `/api/health`
-- GitHub Actions CI
+## Architecture and tradeoffs
 
-## Tech Stack
+Next.js 16 App Router serves pages and server actions. React 19, TypeScript, and Tailwind CSS 4 handle presentation; Recharts renders analytics. Authenticated server actions access PostgreSQL through Prisma 7 and its pg adapter. NextAuth v4 credentials login uses bcrypt password hashes and JWT sessions. Reset tokens are hashed in the database and claimed atomically before changing a password. Resend sends recovery emails from the server.
 
-- Next.js 16 App Router
-- React 19
-- TypeScript
-- Tailwind CSS 4
-- Prisma ORM
-- NextAuth/Auth.js credentials auth
-- Recharts
-- PostgreSQL
-- Docker for local database setup
+Users own applications and tags. Each application has at most one contact and a many-to-many tag relation. Notes remain a string to keep editing straightforward. Analytics load all of a user's applications, which is simple for an individual search but unsuitable for unlimited datasets.
 
-## Architecture Notes
+JWT sessions avoid a session table, but existing sessions are not automatically revoked on password reset. The process-local limiter does not coordinate across serverless instances. Public signup is therefore off by default in production; enabling it requires shared abuse controls.
 
-The app now runs on a PostgreSQL-first workflow locally and in deployment-oriented environments:
+## Run from a clean checkout
 
-- connection config lives in [`prisma.config.ts`](prisma.config.ts)
-- the shared Prisma client uses the generated PostgreSQL client in [`src/lib/prisma.ts`](src/lib/prisma.ts)
-- schema setup is reproducible through [`prisma/migrations`](prisma/migrations)
+Prerequisites: Node.js 24, pnpm 10.34.6, Docker Desktop (or PostgreSQL 16), and Git. The pnpm version is pinned in `package.json`.
 
-## Local Development
-
-Run:
-
-```bash
-pnpm db:postgres:up
+```sh
+git clone https://github.com/YangOwen007/Internship-Tracker.git
+cd Internship-Tracker
 cp .env.example .env
-pnpm db:setup # destructive demo seed; local and CI databases only
+pnpm install --frozen-lockfile
+pnpm db:postgres:up
+pnpm db:generate
+pnpm db:migrate:deploy
 pnpm dev
 ```
 
-Useful scripts:
+In PowerShell, use `Copy-Item .env.example .env` instead of `cp`. Generate an auth secret with `node -e "console.log(require('node:crypto').randomBytes(32).toString('hex'))"` and put it in the untracked `.env`. Open [localhost:3000](http://localhost:3000), create an account, and add applications. Default database credentials are for the loopback-only local container.
 
-```bash
-pnpm db:generate
-pnpm db:migrate:dev
-pnpm db:migrate:deploy
-pnpm db:push
-pnpm db:seed
-pnpm db:setup
-pnpm db:postgres:up
-pnpm db:postgres:down
-pnpm db:postgres:logs
+`pnpm db:seed` and `pnpm db:setup` delete existing data. Use them only with disposable local databases; set `SEED_DEMO_PASSWORD` privately for a known demo password. No seed password is logged. Production and non-loopback targets require an explicit destructive override.
+
+## Environment
+
+See [`.env.example`](.env.example). Keep real values out of Git.
+
+| Variable | Purpose |
+| --- | --- |
+| `DATABASE_URL` | PostgreSQL connection; managed database for deployment |
+| `NEXTAUTH_SECRET` | Strong random signing secret; never use the example |
+| `NEXTAUTH_URL` | Canonical origin; HTTPS for public deployments |
+| `RESEND_API_KEY`, `RESEND_FROM_EMAIL` | Production recovery email and verified sender |
+| `PUBLIC_SIGNUP_ENABLED` | Defaults on locally, off in production |
+| `SEED_DEMO_PASSWORD` | Optional known password for disposable seeds |
+
+Without Resend locally, recovery displays a browser preview link. Do not expose a development server publicly: that link grants password-reset access.
+
+## Verification
+
+```sh
 pnpm lint
 pnpm typecheck
 pnpm test
+pnpm security:scan
+pnpm security:audit
 pnpm build
 ```
 
-## Demo Account
+Tests require local PostgreSQL with migrations applied. They create unique temporary users and clean up their own records. Coverage includes helper validation, tenant-scoped updates, and reset-token reuse/concurrency. `pnpm security:scan -- --history` checks selected credential formats in Git history without printing matches. It is not exhaustive.
 
-- The seed script creates `owen.yang.demo@internship-tracker.local` on a local or explicitly approved test database.
-- Set `SEED_DEMO_PASSWORD` in `.env` before seeding if you need a known local password. Passwords are never printed.
-- `pnpm db:setup` deletes existing rows and is only for disposable local or CI databases. The seed refuses production and non-local targets unless `ALLOW_DESTRUCTIVE_SEED=true` is explicitly set.
+CI installs the frozen lockfile, generates Prisma, migrates a disposable PostgreSQL service, and runs these checks. It does not seed or deploy. Dependabot proposes dependency updates.
 
-## Deployment And PostgreSQL Prep
+The full audit currently reports one development-only high advisory in `braces` through Next.js lint tooling, with no published patched version. CI reports that tooling advisory without suppressing it; production dependency auditing remains a blocking check.
 
-- [`docker-compose.postgres.yml`](docker-compose.postgres.yml)
-- [`.env.example`](.env.example)
-- [`docs/postgres-migration-plan.md`](docs/postgres-migration-plan.md)
-- [`docs/deployment-guide.md`](docs/deployment-guide.md)
+## Production execution
 
-## Password Reset Email Behavior
+```sh
+pnpm install --frozen-lockfile
+pnpm db:generate
+pnpm db:migrate:deploy
+pnpm build
+pnpm start
+```
 
-- In local development, forgot-password shows a browser preview link if no email provider is configured.
-- In production, set `RESEND_API_KEY` and `RESEND_FROM_EMAIL` to send real password-reset emails.
+Configure production variables first. Run migrations once as a release step. Readiness returns 200 when PostgreSQL is reachable and 503 otherwise; it does not test email delivery. See the [deployment guide](docs/deployment-guide.md) for platform setup, backups, rollback, and smoke checks.
 
-## CI
+## Known limitations
 
-The repo includes [`.github/workflows/ci.yml`](.github/workflows/ci.yml), which:
+- Distributed login/signup/recovery abuse protection remains an operator responsibility.
+- Session revocation, email verification, account deletion, and automated retention are not implemented.
+- The dashboard lacks server-side pagination.
+- Browser end-to-end and automated accessibility coverage are incomplete.
+- No release tag, hosted demo, or uptime monitoring is configured; screenshots do not cover every screen.
+- Public visibility does not grant an open-source license.
 
-- installs dependencies
-- starts PostgreSQL
-- applies Prisma migrations
-- seeds demo data
-- runs lint
-- runs typecheck
-- runs tests
-- runs a production build
-
-## Screenshot Plan
-
-README screenshots have not been added yet. The planned capture list is in [`docs/screenshot-shotlist.md`](docs/screenshot-shotlist.md).
-
-## What This Project Demonstrates
-
-- Full-stack web development
-- Thoughtful schema design
-- Clean product-oriented UI/UX
-- Authentication and user-specific data
-- Analytics beyond basic CRUD
-- Deployment and CI readiness
+The project explores relational modeling, authorization, transactions, auth recovery, dashboard state, and repeatable release checks. See [SECURITY.md](SECURITY.md) for reporting and operational notes.
