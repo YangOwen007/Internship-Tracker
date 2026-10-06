@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
+import { Providers } from "@/app/providers";
 import "./globals.css";
 
 export const metadata: Metadata = {
   title: "Internship Tracker",
   description:
-    "A polished internship application tracker with dashboard analytics, pipeline visibility, and student recruiting workflows.",
+    "Organize internship applications, deadlines, contacts, and recruiting progress.",
   robots: {
     index: false,
     follow: false,
@@ -18,7 +19,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="h-full antialiased">
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        <Providers>{children}</Providers>
+      </body>
     </html>
   );
 }

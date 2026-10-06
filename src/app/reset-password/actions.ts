@@ -15,7 +15,7 @@ export type ResetPasswordState = {
 };
 
 const resetPasswordSchema = z.object({
-  token: z.string().min(1),
+  token: z.string().regex(/^[a-f0-9]{64}$/, "This reset link is invalid."),
   password: z
     .string()
     .min(8, "Password must be at least 8 characters long.")
@@ -41,7 +41,7 @@ export async function resetPasswordAction(
   if (!parsedValues.success) {
     return {
       error: parsedValues.error.issues[0]?.message ?? "Invalid password reset request.",
-      values: rawValues,
+      values: { ...rawValues, password: "", confirmPassword: "" },
     };
   }
 

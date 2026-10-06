@@ -7,6 +7,7 @@ import { prisma } from "@/lib/prisma";
 import {
   consumeRateLimit,
   getClientIpFromHeaders,
+  isPublicSignupEnabled,
 } from "@/lib/security";
 
 export type SignupFormState = {
@@ -42,6 +43,18 @@ export async function signup(
     password: String(formData.get("password") ?? ""),
     confirmPassword: String(formData.get("confirmPassword") ?? ""),
   };
+
+  if (!isPublicSignupEnabled()) {
+    return {
+      error: "Account creation is temporarily unavailable.",
+      createdEmail: null,
+      values: {
+        name: rawValues.name,
+        email: rawValues.email,
+        confirmPassword: "",
+      },
+    };
+  }
 
   // Validation stays close to the action so the rules are easy to find when
   // you later expand account creation or add profile fields.

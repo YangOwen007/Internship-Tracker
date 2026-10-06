@@ -44,14 +44,31 @@ function pruneExpiredRateLimits(now: number) {
 export function getClientIpFromHeaders(
   headersLike: Headers | Record<string, HeaderValue> | null | undefined,
 ) {
-  const forwardedFor = readHeaderValue(headersLike, "x-forwarded-for");
-  const realIp = readHeaderValue(headersLike, "x-real-ip");
+  // Vercel controls this header at its edge. Generic x-forwarded-for values
+  // are not trusted because clients can spoof the first hop.
+  if (process.env.VERCEL === "1") {
+    const vercelForwardedFor = readHeaderValue(
+      headersLike,
+      "x-vercel-forwarded-for",
+    );
 
-  if (forwardedFor) {
-    return forwardedFor.split(",")[0]?.trim() || "unknown";
+    return vercelForwardedFor?.split(",")[0]?.trim() || "unknown";
   }
 
-  return realIp?.trim() || "unknown";
+  return "unknown";
+}
+
+export function isPublicSignupEnabled(environment = {
+  nodeEnv: process.env.NODE_ENV,
+  publicSignupEnabled: process.env.PUBLIC_SIGNUP_ENABLED,
+}) {
+  // The in-memory throttle is useful locally, but is not shared across
+  // serverless instances. Production signup must therefore be opted into.
+  if (environment.nodeEnv === "production") {
+    return environment.publicSignupEnabled === "true";
+  }
+
+  return environment.publicSignupEnabled !== "false";
 }
 
 export function consumeRateLimit(

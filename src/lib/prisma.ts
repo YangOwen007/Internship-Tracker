@@ -13,6 +13,8 @@ export const prisma =
     // created against the configured PostgreSQL connection string here.
     const adapter = new PrismaPg({
       connectionString: getDatabaseUrl(),
+      connectionTimeoutMillis: 5_000,
+      max: 5,
     });
 
     return new PrismaClient({ adapter });

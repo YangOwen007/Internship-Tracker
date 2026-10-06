@@ -42,7 +42,5 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# local database + generated prisma client
-prisma/dev.db
-prisma/dev.db-journal
+# generated prisma client
 src/generated/prisma/

@@ -2,6 +2,8 @@
 
 Use this checklist when capturing README or portfolio screenshots.
 
+Captured on October 5, 2026: dashboard overview and login, from the local production build. Dashboard data belongs to a disposable synthetic test account. Board, table, and edit-form captures remain to be added.
+
 ## Core Screens
 
 1. Dashboard overview
@@ -11,13 +13,13 @@ Use this checklist when capturing README or portfolio screenshots.
 3. Table view
    - show filters, sorting, contacts, and notes
 4. Application edit form
-   - show the full CRUD surface
+   - show the application fields, single-contact section, notes field, and resume-version label
 5. Auth screen
    - show the polished login page
 
 ## What To Highlight
 
-- The project looks like a real recruiting product, not a school assignment.
+- The project shows a practical student recruiting workflow.
 - Analytics and prioritization are visible immediately.
 - There is both a board workflow and a detailed table workflow.
 - The app supports auth and user-specific data.

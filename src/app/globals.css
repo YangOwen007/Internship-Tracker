@@ -48,6 +48,11 @@ a {
   background: rgba(47, 125, 246, 0.2);
 }
 
+:focus-visible {
+  outline: 2px solid var(--accent-cool);
+  outline-offset: 3px;
+}
+
 .panel {
   background: var(--surface);
   border: 1px solid var(--border);

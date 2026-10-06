@@ -7,6 +7,7 @@ import {
   ApplicationStatus as PrismaApplicationStatus,
 } from "@/generated/prisma/client";
 import { requireCurrentUser } from "@/lib/auth-user";
+import { updateApplicationStatusForUser } from "@/lib/application-store";
 import { prisma } from "@/lib/prisma";
 import { isSafeHttpUrl } from "@/lib/security";
 
@@ -281,11 +282,11 @@ export async function createApplication(
         role: values.role,
         location: values.location,
         status,
-        appliedAt: new Date(`${values.appliedAt}T00:00:00`),
+        appliedAt: new Date(`${values.appliedAt}T00:00:00Z`),
         salary: values.salary || null,
         jobLink: values.jobLink,
         nextDeadline: values.nextDeadline
-          ? new Date(`${values.nextDeadline}T00:00:00`)
+          ? new Date(`${values.nextDeadline}T00:00:00Z`)
           : null,
         notes: values.notes,
         resumeVersion: values.resumeVersion || null,
@@ -340,17 +341,18 @@ export async function updateApplication(
     await transactionClient.application.update({
       where: {
         id: applicationId,
+        userId: user.id,
       },
       data: {
         company: values.company,
         role: values.role,
         location: values.location,
         status,
-        appliedAt: new Date(`${values.appliedAt}T00:00:00`),
+        appliedAt: new Date(`${values.appliedAt}T00:00:00Z`),
         salary: values.salary || null,
         jobLink: values.jobLink,
         nextDeadline: values.nextDeadline
-          ? new Date(`${values.nextDeadline}T00:00:00`)
+          ? new Date(`${values.nextDeadline}T00:00:00Z`)
           : null,
         notes: values.notes,
         resumeVersion: values.resumeVersion || null,
@@ -377,26 +379,15 @@ export async function updateApplicationStatus(
   const user = await requireCurrentUser();
   const status = validateStatusUpdate(String(formData.get("status") ?? ""));
 
-  const application = await prisma.application.findUnique({
-    where: {
-      id: applicationId,
-    },
+  const wasUpdated = await updateApplicationStatusForUser({
+    applicationId,
+    userId: user.id,
+    status,
   });
 
-  if (!application || application.userId !== user.id) {
+  if (!wasUpdated) {
     throw new Error("Application not found for the current user.");
   }
-
-  // This action updates only the recruiting stage so status changes can be fast
-  // from the dashboard without reopening the full edit form.
-  await prisma.application.update({
-    where: {
-      id: applicationId,
-    },
-    data: {
-      status,
-    },
-  });
 
   revalidatePath("/");
 }

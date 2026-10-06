@@ -13,8 +13,10 @@ const credentialsSchema = z.object({
   password: z.string().min(8).max(72),
 });
 
-if (process.env.NODE_ENV === "production" && !process.env.NEXTAUTH_SECRET) {
-  throw new Error("NEXTAUTH_SECRET must be set in production.");
+if (process.env.NODE_ENV === "production" &&
+    (!process.env.NEXTAUTH_SECRET || process.env.NEXTAUTH_SECRET.length < 32 ||
+      process.env.NEXTAUTH_SECRET.includes("replace-this"))) {
+  throw new Error("NEXTAUTH_SECRET must be a strong, non-placeholder secret in production.");
 }
 
 export const authOptions: NextAuthOptions = {
@@ -53,8 +55,8 @@ export const authOptions: NextAuthOptions = {
           },
         );
 
-        // A small server-side throttle reduces the value of brute-force login
-        // attempts even before a dedicated shared rate-limiter exists.
+        // This process-local throttle is defense in depth. A shared platform
+        // limiter remains necessary before operating at serverless scale.
         if (!loginRateLimit.allowed) {
           return null;
         }

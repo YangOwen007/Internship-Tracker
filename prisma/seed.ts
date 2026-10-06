@@ -20,8 +20,8 @@ const demoPassword =
   configuredDemoPassword || randomBytes(12).toString("base64url");
 
 const demoUser = {
-  email: "owen.yang.demo@internship-tracker.local",
-  name: "Owen Yang",
+  email: "demo@example.test",
+  name: "Demo User",
   password: demoPassword,
 };
 
@@ -40,7 +40,7 @@ const applications = [
     notes:
       "Strong fit. Mentioned dashboard project and ownership on AI tooling experiments.",
     contact: {
-      name: "Maya Chen",
+      name: "Example Recruiter",
       title: "University Recruiter",
       channel: "Referral",
     },
@@ -59,7 +59,7 @@ const applications = [
     notes:
       "OA window closes soon. Prioritize finishing with clean explanations in comments.",
     contact: {
-      name: "Jordan Patel",
+      name: "Example Recruiter",
       title: "Campus Recruiter",
       channel: "LinkedIn",
     },
@@ -93,7 +93,7 @@ const applications = [
     notes:
       "Prepare two scaling stories and one debugging story with measurable impact.",
     contact: {
-      name: "Ari Green",
+      name: "Example Interviewer",
       title: "Engineer Interviewer",
       channel: "Email",
     },
@@ -140,7 +140,7 @@ const applications = [
     notes:
       "Offer in hand. Useful benchmark for what stories resonated across the loop.",
     contact: {
-      name: "Sofia Ramirez",
+      name: "Example Coordinator",
       title: "Recruiting Coordinator",
       channel: "Email",
     },
@@ -165,14 +165,22 @@ const applications = [
 function assertSafeSeedTarget(url: string) {
   // The seed script deletes existing rows before recreating demo data, so we
   // refuse to run against non-local databases unless the caller opts in.
-  if (process.env.ALLOW_DESTRUCTIVE_SEED === "true") {
+  const destructiveSeedApproved =
+    process.env.ALLOW_DESTRUCTIVE_SEED === "true";
+
+  if (process.env.NODE_ENV === "production" && !destructiveSeedApproved) {
+    throw new Error(
+      "Refusing to seed while NODE_ENV=production. Set ALLOW_DESTRUCTIVE_SEED=true only for an intentional destructive reset.",
+    );
+  }
+
+  if (destructiveSeedApproved) {
     return;
   }
 
   const parsed = new URL(url);
   const isLocalDatabase =
-    ["localhost", "127.0.0.1"].includes(parsed.hostname) ||
-    parsed.hostname.endsWith(".internal");
+    ["localhost", "127.0.0.1", "[::1]"].includes(parsed.hostname);
 
   if (!isLocalDatabase) {
     throw new Error(
@@ -257,7 +265,7 @@ async function main() {
   }
 
   console.log(
-    `Seeded ${applications.length} internship applications for ${user.email}. Demo password for this run: ${demoUser.password}`,
+    `Seeded ${applications.length} internship applications for ${user.email}.`,
   );
 }
 

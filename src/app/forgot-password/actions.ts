@@ -65,29 +65,22 @@ export async function requestPasswordReset(
     };
   }
 
-  const user = await getUserAccountByEmail(parsedValues.data.email);
   let previewUrl: string | null = null;
-
-  if (user?.passwordHash) {
-    const resetToken = await createPasswordResetToken(user.id);
-    const resetUrl = `${getAppBaseUrl()}/reset-password?token=${resetToken.rawToken}`;
-    try {
+  try {
+    const user = await getUserAccountByEmail(parsedValues.data.email);
+    if (user?.passwordHash) {
+      const resetToken = await createPasswordResetToken(user.id);
+      const resetUrl = `${getAppBaseUrl()}/reset-password?token=${resetToken.rawToken}`;
       const deliveryResult = await sendPasswordResetEmail({
         to: user.email,
         resetUrl,
       });
 
       previewUrl = deliveryResult.previewUrl ?? null;
-    } catch {
-      return {
-        error: "We couldn't send a reset email right now. Please try again in a moment.",
-        previewUrl: null,
-        submitted: false,
-        values: {
-          email: rawEmail,
-        },
-      };
     }
+  } catch {
+    // Delivery failures must not reveal whether an email belongs to an account.
+    console.error("password_reset_request_failed");
   }
 
   return {

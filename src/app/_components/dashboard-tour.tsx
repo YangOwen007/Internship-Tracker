@@ -314,12 +314,28 @@ export function DashboardTour({
   }, [activeStepIndex, isPromptOpen, isTourActive]);
 
   useEffect(() => {
-    if (!isTourActive) {
+    if (!isTourActive && !isPromptOpen) {
       return;
     }
 
     const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Tab") {
+        const controls = popupRef.current?.querySelectorAll<HTMLButtonElement>('button');
+        if (!controls?.length) return;
+        const first = controls[0];
+        const last = controls[controls.length - 1];
+        // Modal tutorial controls must remain reachable without tabbing behind
+        // the overlay, including on the initial opt-in prompt.
+        if (event.shiftKey && (document.activeElement === first || document.activeElement === popupRef.current)) {
+          event.preventDefault();
+          last.focus();
+        } else if (!event.shiftKey && document.activeElement === last) {
+          event.preventDefault();
+          first.focus();
+        }
+      }
       if (event.key === "Escape") {
+        setIsPromptOpen(false);
         setIsTourActive(false);
         setTargetRect(null);
 
@@ -330,13 +346,13 @@ export function DashboardTour({
         return;
       }
 
-      if (event.key === "ArrowRight") {
+      if (isTourActive && event.key === "ArrowRight") {
         setActiveStepIndex((currentIndex) =>
           Math.min(currentIndex + 1, steps.length - 1),
         );
       }
 
-      if (event.key === "ArrowLeft") {
+      if (isTourActive && event.key === "ArrowLeft") {
         setActiveStepIndex((currentIndex) => Math.max(currentIndex - 1, 0));
       }
     };
@@ -346,7 +362,7 @@ export function DashboardTour({
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
     };
-  }, [isTourActive, tutorialState]);
+  }, [isTourActive, isPromptOpen, tutorialState]);
 
   useEffect(() => {
     const handleStartTour = () => {
