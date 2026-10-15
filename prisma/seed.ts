@@ -25,6 +25,8 @@ const demoUser = {
   password: demoPassword,
 };
 
+// These recruiting scenarios are invented, including company/status/salary
+// combinations. Label records too, so screenshots do not imply real offers.
 const applications = [
   {
     company: "Figma",
@@ -225,7 +227,7 @@ async function main() {
           ? new Date(`${application.nextDeadline}T00:00:00Z`)
           : null,
         resumeVersion: application.resumeVersion,
-        notes: application.notes,
+        notes: `FICTIONAL DEMO: This recruiting scenario, compensation, and status are invented. No company endorsement or actual offer is implied.\n\n${application.notes}`,
       },
     });
 
@@ -240,7 +242,7 @@ async function main() {
       });
     }
 
-    for (const tagName of application.tags) {
+    for (const tagName of [...application.tags, "fictional-demo"]) {
       const tag = await prisma.tag.upsert({
         where: {
           userId_name: {
@@ -265,7 +267,7 @@ async function main() {
   }
 
   console.log(
-    `Seeded ${applications.length} internship applications for ${user.email}.`,
+    `Seeded ${applications.length} FICTIONAL demo applications for ${user.email}. These do not represent actual offers or employer statements.`,
   );
 }
 

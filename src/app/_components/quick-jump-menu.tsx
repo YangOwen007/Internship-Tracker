@@ -213,6 +213,9 @@ export function QuickJumpMenu() {
           </div>
         </div>
 
+        <Link href="/account" onClick={() => setIsOpen(false)} className="mt-5 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-700 hover:bg-slate-50">
+          Account settings
+        </Link>
         <button
           type="button"
           onClick={() => signOut({ callbackUrl: "/login" })}

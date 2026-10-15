@@ -1,6 +1,6 @@
 # Security reporting
 
-Please report suspected credential leaks or authorization vulnerabilities privately using the repository owner's GitHub profile contact options. Do not post tokens, passwords, user records, or exploit details in public issues. Private vulnerability reporting is not assumed to be enabled.
+Please report suspected credential leaks or authorization vulnerabilities privately to yangowen.projects@gmail.com. Do not post tokens, passwords, user records, or exploit details in public issues. Private GitHub vulnerability reporting is not assumed to be enabled.
 
 This project has no security support SLA. Use synthetic data when evaluating it. Production operators must configure HTTPS, secrets, PostgreSQL backups, email delivery, and distributed abuse controls before accepting public traffic.
 

@@ -9,6 +9,7 @@ type LoginPageProps = {
     callbackUrl?: string;
     registered?: string;
     reset?: string;
+    accountDeleted?: string;
   }>;
 };
 
@@ -23,6 +24,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
   const callbackUrl = sanitizeCallbackPath(params.callbackUrl);
   const showRegisteredMessage = params.registered === "1";
   const showResetMessage = params.reset === "1";
+  const showDeletedMessage = params.accountDeleted === "1";
 
   return (
     <main className="mx-auto flex min-h-full w-full max-w-5xl flex-1 items-center px-4 py-10 sm:px-6 lg:px-8">
@@ -71,6 +73,11 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
             </div>
           ) : null}
           <div className="mt-6">
+            {showDeletedMessage ? (
+              <p role="status" className="mb-5 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-800">
+                Account deletion completed. Your live-database records have been removed.
+              </p>
+            ) : null}
             <LoginForm callbackUrl={callbackUrl} />
           </div>
         </div>
