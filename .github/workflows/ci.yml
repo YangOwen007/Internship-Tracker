@@ -77,6 +77,9 @@ jobs:
       - name: Typecheck
         run: pnpm typecheck
 
+      - name: Check shared policy documents
+        run: pnpm policies:check
+
       - name: Test
         run: pnpm test
 

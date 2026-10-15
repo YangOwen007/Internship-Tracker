@@ -79,9 +79,10 @@ test("public signup is disabled by default in production", () => {
     isPublicSignupEnabled({
       nodeEnv: "production",
       publicSignupEnabled: "true",
-    }),
+    }, true),
     true,
   );
+  assert.equal(isPublicSignupEnabled({ nodeEnv: "production", publicSignupEnabled: "true" }, false), false);
 });
 
 test("sortApplications orders deadlines with nulls last", () => {

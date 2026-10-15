@@ -158,6 +158,13 @@ export function SignupForm({ initialState }: { initialState: SignupFormState }) 
 
       <SubmitButton disabled={passwordsMismatch} />
 
+      <p className="text-sm leading-6 text-slate-600">
+        For ages 13 and older, or the higher minimum age required where you live.
+        Review the <Link href="/terms" className="underline underline-offset-4">Terms of use</Link>{" "}
+        and <Link href="/privacy" className="underline underline-offset-4">Privacy notice</Link>{" "}
+        before creating an account. Only add information you are entitled to use.
+      </p>
+
       <p className="text-sm text-slate-500">
         Already have an account?{" "}
         <Link href="/login" className="font-medium text-slate-700 underline decoration-slate-300 underline-offset-4">

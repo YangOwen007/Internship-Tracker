@@ -1,4 +1,5 @@
 import "dotenv/config";
+import { getLegalConfiguration } from "../src/lib/legal-config.ts";
 
 const failures = [];
 const secret = process.env.NEXTAUTH_SECRET?.trim();
@@ -24,6 +25,11 @@ for (const [name, protocols] of [
 if (process.argv.includes("--production")) {
   for (const name of ["RESEND_API_KEY", "RESEND_FROM_EMAIL"]) {
     if (!process.env[name]?.trim()) failures.push(`${name} is required for production recovery email.`);
+  }
+  if (process.env.PUBLIC_SIGNUP_ENABLED === "true") {
+    for (const name of getLegalConfiguration().missing) {
+      failures.push(`${name} must contain finalized public legal disclosures before enabling public signup.`);
+    }
   }
 }
 failures.forEach((message) => console.error(message));

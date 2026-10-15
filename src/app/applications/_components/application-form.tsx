@@ -109,6 +109,11 @@ export function ApplicationForm({
 
   return (
     <form action={formAction} className="grid gap-6">
+      <p className="text-sm leading-6 text-slate-600">
+        Keep entries relevant to your search. Do not include sensitive identifiers,
+        confidential employer material, or unnecessary personal details about contacts.{" "}
+        <Link href="/privacy" className="underline underline-offset-4">Privacy and data handling</Link>
+      </p>
       {state.error ? (
         <div
           className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700"

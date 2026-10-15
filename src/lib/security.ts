@@ -1,3 +1,5 @@
+import { getLegalConfiguration } from "@/lib/legal-config";
+
 type RateLimitWindow = {
   count: number;
   resetAt: number;
@@ -61,11 +63,12 @@ export function getClientIpFromHeaders(
 export function isPublicSignupEnabled(environment = {
   nodeEnv: process.env.NODE_ENV,
   publicSignupEnabled: process.env.PUBLIC_SIGNUP_ENABLED,
-}) {
+}, legalReady = getLegalConfiguration().ready) {
   // The in-memory throttle is useful locally, but is not shared across
-  // serverless instances. Production signup must therefore be opted into.
+  // serverless instances. Production signup must therefore be opted into,
+  // and incomplete public legal disclosures must not be silently bypassed.
   if (environment.nodeEnv === "production") {
-    return environment.publicSignupEnabled === "true";
+    return environment.publicSignupEnabled === "true" && legalReady;
   }
 
   return environment.publicSignupEnabled !== "false";

@@ -15,6 +15,8 @@ Configure real values in the host's secret store. Never expose them as `NEXT_PUB
 - `NEXTAUTH_URL`: canonical HTTPS origin. Staging/preview deployments need separate origins and databases.
 - `RESEND_API_KEY`, `RESEND_FROM_EMAIL`: both required for production recovery emails, with a verified sender.
 - `PUBLIC_SIGNUP_ENABLED`: off by default in production. Enable only after configuring shared limits for login, signup, and recovery.
+- `LEGAL_CONTACT_EMAIL`: intentionally public contact, defaulting to yangowen.projects@gmail.com. Keep the mailbox monitored; do not use a private credential value.
+- `PRIVACY_HOSTING_NOTICE`, `PRIVACY_RETENTION_NOTICE`, `PRIVACY_TRANSFER_NOTICE`: finalized public disclosures for actual providers, processing regions, data-use settings, retention, lawful bases, and transfer safeguards. Public signup stays closed until their shape checks pass. See [legal operations](legal-operations.md); passing checks is not legal clearance.
 
 The process-local limiter is defense in depth. Generic forwarded-IP headers are ignored; the Vercel header is used only with `VERCEL=1`.
 
@@ -47,10 +49,23 @@ For Vercel, import the repository, select Node.js 24, use the pinned pnpm versio
 4. Verify recovery email delivery, HTTPS origin, expired links, and single-use links. No development preview link should appear in production.
 5. Test two-user isolation and mobile/keyboard navigation. Inspect CSP and HTTPS cookie behavior.
 6. Ensure infrastructure access logs do not record reset-token query strings, cookies, or form bodies.
+7. Open `/privacy`, `/terms`, and `/third-party-licenses.txt` without signing in. Confirm the actual deployment disclosures and project contact. Verify provider terms, data-processing agreements, and model-training settings; these are not configured by the app.
+8. Test Account settings deletion with disposable users: wrong passwords/confirmation must fail, a correct deletion must cascade owned records only, and signed-out/private-workspace access must fail afterward. Do not use real users for smoke tests.
 
 ## Operations and recovery
 
 Enable error monitoring and uptime checks. Log event names/request IDs rather than emails, tokens, notes, or passwords. Enable automated backups and rehearse restoration into staging; decide retention/deletion expectations before accepting real personal data.
+
+The approved log/backup retention target is at most 30 days, pending provider
+configuration and verification; do not advertise it as already enforced. No
+inactive-account expiry is scheduled. Schedule `pnpm privacy:cleanup` daily to
+remove expired reset-token records. Reconcile deleted accounts before restoring
+old backups into service; see [legal operations](legal-operations.md).
+
+Generate notices on the release platform with `pnpm licenses:generate -- --registry`
+after a frozen install; inspect metadata-only entries and binary/source obligations.
+The checked-in notice texts come from the development platform. The app serves
+them as a separate static file, not an eagerly loaded dashboard bundle.
 
 Prisma caps each instance at five connections and bounds connection waits. Account for total instance count when sizing database capacity.
 
